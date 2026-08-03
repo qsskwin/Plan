@@ -1,0 +1,5 @@
+
+{
+    "cmake.sourceDirectory": "${workspaceFolder}/aerial-control-lab",
+    "cmake.buildDirectory": "${workspaceFolder}/aerial-control-lab/build"
+}
