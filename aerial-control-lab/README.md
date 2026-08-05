@@ -2,7 +2,7 @@
 
 用于学习和验证飞行器动力学、坐标变换与控制算法的最小 C++/Python 工程。
 
-当前骨架只依赖 C++17 编译器、CMake 和 CTest；暂不引入 Eigen、GoogleTest 或飞控仿真依赖。
+C++ 工程当前只依赖 C++17 编译器、CMake 和 CTest，暂不引入 Eigen、GoogleTest 或飞控仿真依赖。Python 旋转矩阵验证使用 NumPy 和 pytest。
 
 ## 构建与测试
 
@@ -25,6 +25,19 @@ ctest --test-dir build --output-on-failure
 ```bash
 ./build/cpp/exercises/Week1/Tue/task_A/week1_tue_task_a_demo
 ctest --test-dir build -R exercises.week1.tue.task_a --output-on-failure
+```
+
+运行第一周周三任务 A 的生命周期与 RAII 练习：
+
+```bash
+./build/cpp/exercises/Week1/Wed/task_A/week1_wed_task_a_demo
+ctest --test-dir build -R exercises.week1.wed.task_a --output-on-failure
+```
+
+运行 Python 旋转矩阵测试：
+
+```bash
+PYTHONPATH=python python -m pytest python/tests -v
 ```
 
 每周练习默认参与构建。如只需正式核心库和应用，可以配置：
@@ -53,8 +66,13 @@ docs/              项目文档
 ```text
 cpp/exercises/
 └── Week1/
-    └── Tue/
-        └── task_A/
+    ├── Tue/
+    │   ├── task_A/
+    │   └── task_C/
+    └── Wed/
+        ├── task_A/
+        ├── task_B/
+        └── task_C/
 ```
 
 后续周次、日期和任务遵循相同命名规则，详见

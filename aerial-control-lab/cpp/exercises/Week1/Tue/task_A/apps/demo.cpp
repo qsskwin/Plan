@@ -24,7 +24,7 @@ int main() {
               << ", mean=" << task_a::mean(readings).value() << '\n';
 
     // 练习 3：新建 tracked 时 copy_count 为 0。
-    // 第一次调用按值接收左值，需要构造一个副本，因此函数内看到 1；第二次调用只传递
+    // 第一次调用按值接收左值，需要构造一个副本，因此函数内看到 1；第二次调用只传递    这部分没看懂，后续需要多看几遍。
     // const 引用，不创建新对象，所以看到的仍是原对象记录的 0。
     const task_a::CopyTracked tracked;
     std::cout << "copies (by value)=" << task_a::copies_seen_by_value(tracked)

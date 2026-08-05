@@ -1,0 +1,190 @@
+# 坐标系与单位约定
+
+本文档定义 `aerial-control-lab` 使用的坐标系、坐标变换方向以及物理量单位。除非接口另有明确说明，项目中的数学推导、配置、代码和测试均遵循本文约定。
+
+## 1. 基本记号
+
+- 使用右手坐标系和列向量。
+- 下标表示向量分量所表达的坐标系。例如，$\mathbf{v}_B$ 表示向量 $\mathbf{v}$ 在机体系 $B$ 中的分量，$\mathbf{v}_N$ 表示同一向量在 NED 世界系 $N$ 中的分量。
+- 旋转矩阵和四元数采用“目标坐标系在前、源坐标系在后”的命名方式。
+- $\mathbf{R}_{NB}$ 和 $\mathbf{q}_{NB}$ 均表示从机体系 $B$ 到 NED 世界系 $N$ 的坐标变换。
+
+## 2. NED 世界坐标系
+
+世界坐标系 $N$ 使用 NED（North-East-Down）约定：
+
+- $x_N$：指向北（North）；
+- $y_N$：指向东（East）；
+- $z_N$：指向下（Down）。
+
+该坐标系满足右手定则：
+
+$$
+\mathbf{e}_{x_N} \times \mathbf{e}_{y_N} = \mathbf{e}_{z_N}
+$$
+
+由于 $z_N$ 正方向向下，重力加速度在 NED 坐标系中写作：
+
+$$
+\mathbf{g}_N = \begin{bmatrix} 0 & 0 & +g \end{bmatrix}^{\mathsf T}
+$$
+
+其中 $g$ 是重力加速度大小，为正标量；标准重力近似为 $9.80665\,\mathrm{m/s^2}$。
+
+## 3. FRD 机体坐标系
+
+机体坐标系 $B$ 使用 FRD（Forward-Right-Down）约定，其原点固定在飞行器上：
+
+- $x_B$：指向机体前方（Forward）；
+- $y_B$：指向机体右方（Right）；
+- $z_B$：指向机体下方（Down）。
+
+该坐标系同样满足右手定则：
+
+$$
+\mathbf{e}_{x_B} \times \mathbf{e}_{y_B} = \mathbf{e}_{z_B}
+$$
+
+在 FRD 约定下，四旋翼总推力通常沿机体 $z_B$ 轴的负方向。若推力大小 $T \ge 0$，则机体系中的总推力向量写作：
+
+$$
+\mathbf{F}_{T,B} = \begin{bmatrix} 0 & 0 & -T \end{bmatrix}^{\mathsf T}
+$$
+
+## 4. 机体系与世界系之间的变换
+
+### 4.1 下标方向与反向变换
+
+$\mathbf{R}_{NB}$ 将机体系分量转换为 NED 世界系分量：
+
+$$
+\mathbf{v}_N = \mathbf{R}_{NB}\mathbf{v}_B
+$$
+
+$\mathbf{q}_{NB}$ 表示与 $\mathbf{R}_{NB}$ 相同方向的姿态变换，也就是把机体系向量转换到 NED 世界系。四元数的系数顺序和乘法细节将在四元数实现阶段继续补充，但其下标方向始终遵循本文定义。
+
+反向变换记为 $\mathbf{R}_{BN}$。旋转矩阵的逆等于其转置，因此：
+
+$$
+\mathbf{R}_{BN} = \mathbf{R}_{NB}^{\mathsf T}
+$$
+
+$$
+\mathbf{v}_B
+= \mathbf{R}_{BN}\mathbf{v}_N
+= \mathbf{R}_{NB}^{\mathsf T}\mathbf{v}_N
+$$
+
+### 4.2 主动旋转与坐标变换
+
+主动旋转保持坐标系不动，让几何向量本身发生旋转：
+
+$$
+\mathbf v'=\mathbf R(\theta)\mathbf v.
+$$
+
+坐标变换保持几何向量不动，只改变该向量的坐标表达。例如
+
+$$
+\mathbf v_N=\mathbf R_{NB}\mathbf v_B
+$$
+
+中的 $\mathbf v_N$ 和 $\mathbf v_B$ 描述同一个几何向量。本文中的 $\mathbf R_{NB}$ 默认按坐标变换解释；若代码或推导使用主动旋转，必须明确写出旋转轴、正方向以及输入和输出所在的坐标系。
+
+### 4.3 $\mathbf R_{NB}$ 的列向量含义
+
+记 $(\mathbf e_{x_B})_N$ 为机体 $x_B$ 轴的单位向量在 NED 世界系中的分量，其他两轴同理，则
+
+$$
+\mathbf R_{NB}
+=
+\begin{bmatrix}
+(\mathbf e_{x_B})_N &
+(\mathbf e_{y_B})_N &
+(\mathbf e_{z_B})_N
+\end{bmatrix}.
+$$
+
+因此，$\mathbf R_{NB}$ 的三列依次表示机体前、右、下三个轴在 NED 世界系中的方向。
+
+## 5. 单位约定
+
+项目统一使用 SI 单位；角度在内部计算、接口和配置中统一使用弧度。
+
+| 物理量 | 单位 | 符号 |
+| --- | --- | --- |
+| 长度 | 米 | $\mathrm{m}$ |
+| 时间 | 秒 | $\mathrm{s}$ |
+| 角度 | 弧度 | $\mathrm{rad}$ |
+| 角速度 | 弧度每秒 | $\mathrm{rad/s}$ |
+| 质量 | 千克 | $\mathrm{kg}$ |
+| 力 | 牛顿 | $\mathrm{N}$ |
+| 力矩 | 牛顿米 | $\mathrm{N\cdot m}$ |
+
+若日志或界面为了便于阅读而显示角度制，必须显式标注 $\mathrm{deg}$，并在进入计算前转换为弧度。
+
+## 6. 简单例子：机体系与世界系重合
+
+当机体系与 NED 世界系完全重合时：
+
+$$
+\mathbf{R}_{NB} = \mathbf{I}
+$$
+
+机体前方单位向量在机体系中为：
+
+$$
+\mathbf{v}_B = \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T}
+$$
+
+转换到 NED 世界系：
+
+$$
+\begin{aligned}
+\mathbf{v}_N
+&= \mathbf{R}_{NB}\mathbf{v}_B \\
+&= \mathbf{I}\begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T} \\
+&= \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T}
+\end{aligned}
+$$
+
+因此，当两个坐标系重合时，机体前方对应 NED 世界系的北向。
+
+## 7. 绕 NED 向下轴正转 $90^\circ$
+
+机体相对 NED 世界系绕 $z_N$ 轴正转 $90^\circ$。由于 $z_N$ 指向下方，根据右手定则，机体前方由北转向东。对应的机体系到世界系变换为
+
+$$
+\mathbf R_{NB}
+=\mathbf R_z\!\left(\frac{\pi}{2}\right)
+=
+\begin{bmatrix}
+0 & -1 & 0 \\
+1 & 0 & 0 \\
+0 & 0 & 1
+\end{bmatrix}.
+$$
+
+输入向量是机体系中的前向单位向量：
+
+$$
+\mathbf v_B=
+\begin{bmatrix}
+1&0&0
+\end{bmatrix}^{\mathsf T}.
+$$
+
+将其转换到 NED 世界系：
+
+$$
+\begin{aligned}
+\mathbf v_N
+&=\mathbf R_{NB}\mathbf v_B \\
+&=
+\begin{bmatrix}
+0&1&0
+\end{bmatrix}^{\mathsf T}.
+\end{aligned}
+$$
+
+输出沿 $y_N$ 正方向，即东方。这里的输入坐标系是机体系 $B$，输出坐标系是 NED 世界系 $N$。

@@ -68,6 +68,7 @@ target_link_libraries(sanity_check PRIVATE aerial_core)
 # 唯一 target 名称，避免后续新增 Week2、Mon 或 task_B 时发生重名。
 if(AERIAL_BUILD_EXERCISES)
     add_subdirectory(cpp/exercises/Week1/Tue/task_A)
+    add_subdirectory(cpp/exercises/Week1/Wed/task_A)
 endif()
 
 # 只有在 BUILD_TESTING=ON 时才创建测试程序并注册 CTest 测试。

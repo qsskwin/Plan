@@ -33,3 +33,7 @@ cpp/exercises/
 ## 当前内容
 
 - [`Week1/Tue/task_A`](Week1/Tue/task_A/README.md)：值、引用、指针、STL 与所有权基础练习。
+- [`Week1/Tue/task_C`](Week1/Tue/task_C/README.md)：坐标系约定文档的任务索引。
+- [`Week1/Wed/task_A`](Week1/Wed/task_A/README.md)：对象生命周期、RAII、`ScopeTimer` 与独占所有权练习。
+- [`Week1/Wed/task_B`](Week1/Wed/task_B/README.md)：基本旋转矩阵推导、合法性验证与乘法顺序说明。
+- [`Week1/Wed/task_C`](Week1/Wed/task_C/README.md)：Python 旋转矩阵实现与测试的任务索引。
