@@ -11,6 +11,17 @@ C++ 工程使用标准 C++17、Eigen 3.4.1、GoogleTest 1.17.0 和 CTest；Pytho
 
 MSVC 不受支持，CMake 检测到 MSVC 时会直接提示改用 MinGW GCC。双机角色和问题定位见 [`docs/build_troubleshooting.md`](docs/build_troubleshooting.md)。
 
+## 第一周旋转模块
+
+当前 `aerial_core` 已包含基于 Eigen 的最小四元数旋转接口：
+
+- `normalizeQuaternion`：验证并归一化非零有限四元数；
+- `composeRotation`：按“先第一个、再第二个”的明确顺序组合旋转；
+- `rotateBodyToNed`：把 FRD 机体系向量转换到 NED 世界系；
+- `rotateNedToBody`：执行上述变换的逆变换。
+
+公共接口位于 [`cpp/include/core/rotation.hpp`](cpp/include/core/rotation.hpp)，约定见 [`docs/coordinate_conventions.md`](docs/coordinate_conventions.md)，Python/C++ 共用的固定用例见 [`docs/rotation_test_vectors.md`](docs/rotation_test_vectors.md)。
+
 ## 构建与测试
 
 推荐使用与主机匹配的 CMake preset。
@@ -74,6 +85,18 @@ $env:PYTHONPATH = "python"
 python -m pytest python/tests -v
 ```
 
+只运行 C++ 旋转 GoogleTest（应先完成对应 preset 的配置和构建）：
+
+```bash
+ctest --preset ubuntu-gcc-debug -R RotationUtilitiesTest
+```
+
+Windows PowerShell：
+
+```powershell
+ctest --preset windows-mingw-gcc-debug -R RotationUtilitiesTest
+```
+
 本次验证使用的 NumPy/pytest 版本记录在 [`requirements-dev.txt`](requirements-dev.txt)。已有可用环境不必为第一周主动重装；需要精确复现时再在各自机器的独立虚拟环境中安装该文件。
 
 每周练习默认参与构建。如只需正式核心库和应用，可以配置：
@@ -109,10 +132,15 @@ cpp/exercises/
     │   ├── task_A/
     │   ├── task_B/
     │   └── task_C/
-    └── Thu/
+    ├── Thu/
+    │   ├── task_A/
+    │   ├── task_B/
+    │   └── task_C/
+    └── Fri/
         ├── task_A/
         ├── task_B/
-        └── task_C/
+        ├── task_C/
+        └── task_E/
 ```
 
 后续周次、日期和任务遵循相同命名规则，详见

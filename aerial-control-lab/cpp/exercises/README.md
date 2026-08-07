@@ -40,3 +40,7 @@ cpp/exercises/
 - [`Week1/Thu/task_A`](Week1/Thu/task_A/README.md)：四元数顺序、Hamilton 乘法、轴角、向量旋转与组合推导。
 - [`Week1/Thu/task_B`](Week1/Thu/task_B/README.md)：Python 四元数实现与 6 类核心测试的任务索引。
 - [`Week1/Thu/task_C`](Week1/Thu/task_C/README.md)：Eigen、GoogleTest、CTest 兜底与双平台 GCC 构建说明。
+- [`Week1/Fri/task_A`](Week1/Fri/task_A/README.md)：正式 C++/Eigen 旋转接口、输入策略和 Eigen 系数顺序。
+- [`Week1/Fri/task_B`](Week1/Fri/task_B/README.md)：GoogleTest 覆盖与 Python/C++ 共享测试向量。
+- [`Week1/Fri/task_C`](Week1/Fri/task_C/README.md)：ZYX 欧拉角定义、奇异性和使用限制。
+- [`Week1/Fri/task_E`](Week1/Fri/task_E/README.md)：干净构建、完整测试与警告检查记录。

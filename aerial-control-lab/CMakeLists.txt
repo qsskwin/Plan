@@ -124,6 +124,7 @@ option(AERIAL_BUILD_EXERCISES "Build Week/Day/Task learning exercises" ON)
 # 后续坐标变换、动力学和控制算法的公共实现可以继续加入这个目标。
 add_library(aerial_core
     cpp/src/project_info.cpp
+    cpp/src/rotation.cpp
 )
 
 # 设置 aerial_core 的公共头文件搜索路径。
@@ -216,6 +217,7 @@ if(BUILD_TESTING)
 
         add_executable(aerial_core_gtest
             cpp/tests/eigen_vector_test.cpp
+            cpp/tests/rotation_test.cpp
         )
         target_link_libraries(aerial_core_gtest
             PRIVATE
