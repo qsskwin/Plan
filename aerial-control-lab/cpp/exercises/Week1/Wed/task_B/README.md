@@ -16,16 +16,16 @@
 
 $$
 \begin{aligned}
-\mathbf e_x &\longmapsto \mathbf e_x, \\
-\mathbf e_y &\longmapsto \cos\theta\,\mathbf e_y+\sin\theta\,\mathbf e_z, \\
-\mathbf e_z &\longmapsto -\sin\theta\,\mathbf e_y+\cos\theta\,\mathbf e_z.
+\mathbf{e}_x &\longmapsto \mathbf{e}_x, \\
+\mathbf{e}_y &\longmapsto \cos\theta\,\mathbf{e}_y+\sin\theta\,\mathbf{e}_z, \\
+\mathbf{e}_z &\longmapsto -\sin\theta\,\mathbf{e}_y+\cos\theta\,\mathbf{e}_z.
 \end{aligned}
 $$
 
 把三个基向量的变换结果依次作为矩阵的列，得到
 
 $$
-\mathbf R_x(\theta)
+\mathbf{R}_x(\theta)
 =
 \begin{bmatrix}
 1 & 0 & 0 \\
@@ -40,16 +40,16 @@ $$
 
 $$
 \begin{aligned}
-\mathbf e_x &\longmapsto \cos\theta\,\mathbf e_x-\sin\theta\,\mathbf e_z, \\
-\mathbf e_y &\longmapsto \mathbf e_y, \\
-\mathbf e_z &\longmapsto \sin\theta\,\mathbf e_x+\cos\theta\,\mathbf e_z.
+\mathbf{e}_x &\longmapsto \cos\theta\,\mathbf{e}_x-\sin\theta\,\mathbf{e}_z, \\
+\mathbf{e}_y &\longmapsto \mathbf{e}_y, \\
+\mathbf{e}_z &\longmapsto \sin\theta\,\mathbf{e}_x+\cos\theta\,\mathbf{e}_z.
 \end{aligned}
 $$
 
 因此
 
 $$
-\mathbf R_y(\theta)
+\mathbf{R}_y(\theta)
 =
 \begin{bmatrix}
 \cos\theta & 0 & \sin\theta \\
@@ -64,16 +64,16 @@ $$
 
 $$
 \begin{aligned}
-\mathbf e_x &\longmapsto \cos\theta\,\mathbf e_x+\sin\theta\,\mathbf e_y, \\
-\mathbf e_y &\longmapsto -\sin\theta\,\mathbf e_x+\cos\theta\,\mathbf e_y, \\
-\mathbf e_z &\longmapsto \mathbf e_z.
+\mathbf{e}_x &\longmapsto \cos\theta\,\mathbf{e}_x+\sin\theta\,\mathbf{e}_y, \\
+\mathbf{e}_y &\longmapsto -\sin\theta\,\mathbf{e}_x+\cos\theta\,\mathbf{e}_y, \\
+\mathbf{e}_z &\longmapsto \mathbf{e}_z.
 \end{aligned}
 $$
 
 因此
 
 $$
-\mathbf R_z(\theta)
+\mathbf{R}_z(\theta)
 =
 \begin{bmatrix}
 \cos\theta & -\sin\theta & 0 \\
@@ -89,7 +89,7 @@ $$
 主动旋转保持坐标系不动，让几何向量本身旋转。若旋转前后的向量都在同一坐标系中表达，则
 
 $$
-\mathbf v' = \mathbf R(\theta)\mathbf v.
+\mathbf{v}' = \mathbf{R}(\theta)\mathbf{v}.
 $$
 
 这里的撇号表示旋转后的新几何向量。
@@ -99,10 +99,10 @@ $$
 坐标变换保持几何向量不动，只改变描述该向量的坐标系。项目中的
 
 $$
-\mathbf v_N = \mathbf R_{NB}\mathbf v_B
+\mathbf{v}_N = \mathbf{R}_{NB}\mathbf{v}_B
 $$
 
-表示同一个几何向量分别用机体系 $B$ 和 NED 世界系 $N$ 表达。$mathbf R_{NB}$ 的第一列、第二列和第三列，分别是机体 $x_B$、$y_B$、$z_B$ 轴在 NED 世界系中的分量。
+表示同一个几何向量分别用机体系 $B$ 和 NED 世界系 $N$ 表达。$\mathbf{R}_{NB}$ 的第一列、第二列和第三列，分别是机体 $x_B$、$y_B$、$z_B$ 轴在 NED 世界系中的分量。
 
 主动旋转与坐标变换可能使用数值相同的矩阵，但二者解释不同。阅读公式时必须先确认“向量是否真的转动”和“输入、输出分别在哪个坐标系中表达”。
 
@@ -111,16 +111,16 @@ $$
 合法三维旋转矩阵必须满足
 
 $$
-\mathbf R^{\mathsf T}\mathbf R=\mathbf I,
+\mathbf{R}^{\mathsf{T}}\mathbf{R}=\mathbf{I},
 \qquad
-\det(\mathbf R)=+1.
+\det(\mathbf{R})=+1.
 $$
 
-以 $mathbf R_z(\theta)$ 为例：
+以 $\mathbf{R}_z(\theta)$ 为例：
 
 $$
 \begin{aligned}
-\mathbf R_z^{\mathsf T}\mathbf R_z
+\mathbf{R}_z^{\mathsf{T}}\mathbf{R}_z
 &=
 \begin{bmatrix}
 \cos\theta & \sin\theta & 0 \\
@@ -138,22 +138,22 @@ $$
 0 & \cos^2\theta+\sin^2\theta & 0 \\
 0 & 0 & 1
 \end{bmatrix} \\
-&=\mathbf I.
+&=\mathbf{I}.
 \end{aligned}
 $$
 
 同时
 
 $$
-\det\!\left(\mathbf R_z\right)
+\det\!\left(\mathbf{R}_z\right)
 =\cos^2\theta+\sin^2\theta
 =1.
 $$
 
-$mathbf R_x(\theta)$ 和 $mathbf R_y(\theta)$ 可用相同方法验证。正交性说明长度和夹角保持不变，并给出
+$\mathbf{R}_x(\theta)$ 和 $\mathbf{R}_y(\theta)$ 可用相同方法验证。正交性说明长度和夹角保持不变，并给出
 
 $$
-\mathbf R^{-1}=\mathbf R^{\mathsf T}.
+\mathbf{R}^{-1}=\mathbf{R}^{\mathsf{T}}.
 $$
 
 仅满足正交性还不够；行列式为 $-1$ 的矩阵包含镜像反射，不是纯旋转。
@@ -163,34 +163,34 @@ $$
 列向量约定下，最右侧的矩阵最先作用。取
 
 $$
-\mathbf e_x=
+\mathbf{e}_x=
 \begin{bmatrix}
 1&0&0
-\end{bmatrix}^{\mathsf T},
+\end{bmatrix}^{\mathsf{T}},
 $$
 
 先绕 $x$ 轴旋转 $90^\circ$，再绕 $z$ 轴旋转 $90^\circ$，得到
 
 $$
-\mathbf R_z\!\left(\frac{\pi}{2}\right)
-\mathbf R_x\!\left(\frac{\pi}{2}\right)
-\mathbf e_x
-=\mathbf e_y.
+\mathbf{R}_z\!\left(\frac{\pi}{2}\right)
+\mathbf{R}_x\!\left(\frac{\pi}{2}\right)
+\mathbf{e}_x
+=\mathbf{e}_y.
 $$
 
 交换顺序后得到
 
 $$
-\mathbf R_x\!\left(\frac{\pi}{2}\right)
-\mathbf R_z\!\left(\frac{\pi}{2}\right)
-\mathbf e_x
-=\mathbf e_z.
+\mathbf{R}_x\!\left(\frac{\pi}{2}\right)
+\mathbf{R}_z\!\left(\frac{\pi}{2}\right)
+\mathbf{e}_x
+=\mathbf{e}_z.
 $$
 
 两个结果不同，因此一般情况下
 
 $$
-\mathbf R_z\mathbf R_x \ne \mathbf R_x\mathbf R_z.
+\mathbf{R}_z\mathbf{R}_x \ne \mathbf{R}_x\mathbf{R}_z.
 $$
 
 ## 8. NED/FRD 的 $90^\circ$ 例子
@@ -198,8 +198,8 @@ $$
 机体相对 NED 世界系绕向下的 $z_N$ 轴正转 $90^\circ$ 时，机体前方由北转向东。此时
 
 $$
-\mathbf R_{NB}
-=\mathbf R_z\!\left(\frac{\pi}{2}\right)
+\mathbf{R}_{NB}
+=\mathbf{R}_z\!\left(\frac{\pi}{2}\right)
 =
 \begin{bmatrix}
 0 & -1 & 0 \\
@@ -211,22 +211,22 @@ $$
 输入是机体系中的前向单位向量：
 
 $$
-\mathbf v_B=
+\mathbf{v}_B=
 \begin{bmatrix}
 1&0&0
-\end{bmatrix}^{\mathsf T}.
+\end{bmatrix}^{\mathsf{T}}.
 $$
 
 输出是该向量在 NED 世界系中的分量：
 
 $$
 \begin{aligned}
-\mathbf v_N
-&=\mathbf R_{NB}\mathbf v_B \\
+\mathbf{v}_N
+&=\mathbf{R}_{NB}\mathbf{v}_B \\
 &=
 \begin{bmatrix}
 0&1&0
-\end{bmatrix}^{\mathsf T}.
+\end{bmatrix}^{\mathsf{T}}.
 \end{aligned}
 $$
 

@@ -1,0 +1,76 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "common-gcc-debug",
+      "hidden": true,
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_COMPILER": "g++",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+        "BUILD_TESTING": true,
+        "AERIAL_BUILD_EXERCISES": true,
+        "AERIAL_FETCH_DEPENDENCIES": true,
+        "AERIAL_ENABLE_GOOGLETEST": true
+      }
+    },
+    {
+      "name": "ubuntu-gcc-debug",
+      "displayName": "Ubuntu GCC Debug",
+      "description": "Canonical Ubuntu build using GCC/G++ and Unix Makefiles",
+      "inherits": "common-gcc-debug",
+      "generator": "Unix Makefiles",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "windows-mingw-gcc-debug",
+      "displayName": "Windows MinGW GCC Debug",
+      "description": "Secondary Windows build using MinGW GCC/G++; MSVC is not supported",
+      "inherits": "common-gcc-debug",
+      "generator": "MinGW Makefiles",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Windows"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "ubuntu-gcc-debug",
+      "configurePreset": "ubuntu-gcc-debug",
+      "jobs": 4
+    },
+    {
+      "name": "windows-mingw-gcc-debug",
+      "configurePreset": "windows-mingw-gcc-debug",
+      "jobs": 4
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "ubuntu-gcc-debug",
+      "configurePreset": "ubuntu-gcc-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "windows-mingw-gcc-debug",
+      "configurePreset": "windows-mingw-gcc-debug",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

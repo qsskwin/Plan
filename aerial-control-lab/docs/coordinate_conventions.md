@@ -26,7 +26,7 @@ $$
 由于 $z_N$ 正方向向下，重力加速度在 NED 坐标系中写作：
 
 $$
-\mathbf{g}_N = \begin{bmatrix} 0 & 0 & +g \end{bmatrix}^{\mathsf T}
+\mathbf{g}_N = \begin{bmatrix} 0 & 0 & +g \end{bmatrix}^{\mathsf{T}}
 $$
 
 其中 $g$ 是重力加速度大小，为正标量；标准重力近似为 $9.80665\,\mathrm{m/s^2}$。
@@ -48,7 +48,7 @@ $$
 在 FRD 约定下，四旋翼总推力通常沿机体 $z_B$ 轴的负方向。若推力大小 $T \ge 0$，则机体系中的总推力向量写作：
 
 $$
-\mathbf{F}_{T,B} = \begin{bmatrix} 0 & 0 & -T \end{bmatrix}^{\mathsf T}
+\mathbf{F}_{T,B} = \begin{bmatrix} 0 & 0 & -T \end{bmatrix}^{\mathsf{T}}
 $$
 
 ## 4. 机体系与世界系之间的变换
@@ -66,13 +66,13 @@ $\mathbf{q}_{NB}$ 表示与 $\mathbf{R}_{NB}$ 相同方向的姿态变换，也�
 反向变换记为 $\mathbf{R}_{BN}$。旋转矩阵的逆等于其转置，因此：
 
 $$
-\mathbf{R}_{BN} = \mathbf{R}_{NB}^{\mathsf T}
+\mathbf{R}_{BN} = \mathbf{R}_{NB}^{\mathsf{T}}
 $$
 
 $$
 \mathbf{v}_B
 = \mathbf{R}_{BN}\mathbf{v}_N
-= \mathbf{R}_{NB}^{\mathsf T}\mathbf{v}_N
+= \mathbf{R}_{NB}^{\mathsf{T}}\mathbf{v}_N
 $$
 
 ### 4.2 主动旋转与坐标变换
@@ -80,32 +80,32 @@ $$
 主动旋转保持坐标系不动，让几何向量本身发生旋转：
 
 $$
-\mathbf v'=\mathbf R(\theta)\mathbf v.
+\mathbf{v}'=\mathbf{R}(\theta)\mathbf{v}.
 $$
 
 坐标变换保持几何向量不动，只改变该向量的坐标表达。例如
 
 $$
-\mathbf v_N=\mathbf R_{NB}\mathbf v_B
+\mathbf{v}_N=\mathbf{R}_{NB}\mathbf{v}_B
 $$
 
-中的 $\mathbf v_N$ 和 $\mathbf v_B$ 描述同一个几何向量。本文中的 $\mathbf R_{NB}$ 默认按坐标变换解释；若代码或推导使用主动旋转，必须明确写出旋转轴、正方向以及输入和输出所在的坐标系。
+中的 $\mathbf{v}_N$ 和 $\mathbf{v}_B$ 描述同一个几何向量。本文中的 $\mathbf{R}_{NB}$ 默认按坐标变换解释；若代码或推导使用主动旋转，必须明确写出旋转轴、正方向以及输入和输出所在的坐标系。
 
-### 4.3 $\mathbf R_{NB}$ 的列向量含义
+### 4.3 $\mathbf{R}_{NB}$ 的列向量含义
 
-记 $(\mathbf e_{x_B})_N$ 为机体 $x_B$ 轴的单位向量在 NED 世界系中的分量，其他两轴同理，则
+记 $(\mathbf{e}_{x_B})_N$ 为机体 $x_B$ 轴的单位向量在 NED 世界系中的分量，其他两轴同理，则
 
 $$
-\mathbf R_{NB}
+\mathbf{R}_{NB}
 =
 \begin{bmatrix}
-(\mathbf e_{x_B})_N &
-(\mathbf e_{y_B})_N &
-(\mathbf e_{z_B})_N
+(\mathbf{e}_{x_B})_N &
+(\mathbf{e}_{y_B})_N &
+(\mathbf{e}_{z_B})_N
 \end{bmatrix}.
 $$
 
-因此，$\mathbf R_{NB}$ 的三列依次表示机体前、右、下三个轴在 NED 世界系中的方向。
+因此，$\mathbf{R}_{NB}$ 的三列依次表示机体前、右、下三个轴在 NED 世界系中的方向。
 
 ## 5. 单位约定
 
@@ -134,7 +134,7 @@ $$
 机体前方单位向量在机体系中为：
 
 $$
-\mathbf{v}_B = \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T}
+\mathbf{v}_B = \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf{T}}
 $$
 
 转换到 NED 世界系：
@@ -143,8 +143,8 @@ $$
 \begin{aligned}
 \mathbf{v}_N
 &= \mathbf{R}_{NB}\mathbf{v}_B \\
-&= \mathbf{I}\begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T} \\
-&= \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf T}
+&= \mathbf{I}\begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf{T}} \\
+&= \begin{bmatrix} 1 & 0 & 0 \end{bmatrix}^{\mathsf{T}}
 \end{aligned}
 $$
 
@@ -155,8 +155,8 @@ $$
 机体相对 NED 世界系绕 $z_N$ 轴正转 $90^\circ$。由于 $z_N$ 指向下方，根据右手定则，机体前方由北转向东。对应的机体系到世界系变换为
 
 $$
-\mathbf R_{NB}
-=\mathbf R_z\!\left(\frac{\pi}{2}\right)
+\mathbf{R}_{NB}
+=\mathbf{R}_z\!\left(\frac{\pi}{2}\right)
 =
 \begin{bmatrix}
 0 & -1 & 0 \\
@@ -168,23 +168,96 @@ $$
 输入向量是机体系中的前向单位向量：
 
 $$
-\mathbf v_B=
+\mathbf{v}_B=
 \begin{bmatrix}
 1&0&0
-\end{bmatrix}^{\mathsf T}.
+\end{bmatrix}^{\mathsf{T}}.
 $$
 
 将其转换到 NED 世界系：
 
 $$
 \begin{aligned}
-\mathbf v_N
-&=\mathbf R_{NB}\mathbf v_B \\
+\mathbf{v}_N
+&=\mathbf{R}_{NB}\mathbf{v}_B \\
 &=
 \begin{bmatrix}
 0&1&0
-\end{bmatrix}^{\mathsf T}.
+\end{bmatrix}^{\mathsf{T}}.
 \end{aligned}
 $$
 
 输出沿 $y_N$ 正方向，即东方。这里的输入坐标系是机体系 $B$，输出坐标系是 NED 世界系 $N$。
+
+## 8. 四元数约定
+
+### 8.1 系数顺序与乘法
+
+项目中的四元数统一使用标量在前的顺序：
+
+$$
+\mathbf{q}=[w,x,y,z].
+$$
+
+乘法统一使用 Hamilton 约定，记为 $\otimes$。若
+
+$$
+\mathbf{p}=[p_w,\mathbf{p}_v],
+\qquad
+\mathbf{q}=[q_w,\mathbf{q}_v],
+$$
+
+则
+
+$$
+\mathbf{p}\otimes\mathbf{q}
+=
+\left[
+p_wq_w-\mathbf{p}_v\cdot\mathbf{q}_v,
+\;
+p_w\mathbf{q}_v+q_w\mathbf{p}_v
++\mathbf{p}_v\times\mathbf{q}_v
+\right].
+$$
+
+四元数乘法通常不可交换。列向量约定下，最右侧的旋转最先作用。
+
+### 8.2 $\mathbf{q}_{NB}$ 的方向
+
+$\mathbf{q}_{NB}$ 与 $\mathbf{R}_{NB}$ 表示相同方向的变换。对单位四元数：
+
+$$
+[0,\mathbf{v}_N]
+=\mathbf{q}_{NB}
+\otimes[0,\mathbf{v}_B]
+\otimes\mathbf{q}_{NB}^{*}.
+$$
+
+反向变换四元数为
+
+$$
+\mathbf{q}_{BN}
+=\mathbf{q}_{NB}^{-1}
+=\mathbf{q}_{NB}^{*}.
+$$
+
+若 $\mathbf{q}_{BC}$ 把 $C$ 系向量分量变换到 $B$ 系，则连续变换为
+
+$$
+\mathbf{q}_{NC}
+=\mathbf{q}_{NB}\otimes\mathbf{q}_{BC}.
+$$
+
+### 8.3 归一化与符号等价
+
+表示姿态的四元数必须满足
+
+$$
+\lVert\mathbf{q}\rVert=1.
+$$
+
+浮点运算或姿态积分后必须重新归一化，避免范数漂移混入向量缩放。零四元数不能归一化，也不能表示姿态。
+
+$\mathbf{q}$ 和 $-\mathbf{q}$ 表示同一个三维姿态，测试和姿态比较必须允许整体符号相反。
+
+完整推导、组合顺序和 $90^\circ$ 固定例子见 [`cpp/exercises/Week1/Thu/task_A/README.md`](../cpp/exercises/Week1/Thu/task_A/README.md)。

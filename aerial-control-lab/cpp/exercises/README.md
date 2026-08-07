@@ -37,3 +37,6 @@ cpp/exercises/
 - [`Week1/Wed/task_A`](Week1/Wed/task_A/README.md)：对象生命周期、RAII、`ScopeTimer` 与独占所有权练习。
 - [`Week1/Wed/task_B`](Week1/Wed/task_B/README.md)：基本旋转矩阵推导、合法性验证与乘法顺序说明。
 - [`Week1/Wed/task_C`](Week1/Wed/task_C/README.md)：Python 旋转矩阵实现与测试的任务索引。
+- [`Week1/Thu/task_A`](Week1/Thu/task_A/README.md)：四元数顺序、Hamilton 乘法、轴角、向量旋转与组合推导。
+- [`Week1/Thu/task_B`](Week1/Thu/task_B/README.md)：Python 四元数实现与 6 类核心测试的任务索引。
+- [`Week1/Thu/task_C`](Week1/Thu/task_C/README.md)：Eigen、GoogleTest、CTest 兜底与双平台 GCC 构建说明。

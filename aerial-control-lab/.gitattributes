@@ -1,0 +1,16 @@
+# Normalize repository text to LF so Windows and Linux do not create noisy diffs.
+* text=auto
+
+*.cpp text eol=lf
+*.hpp text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.cmake text eol=lf
+CMakeLists.txt text eol=lf
+
+# Keep native command-script endings when those file types are introduced.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf

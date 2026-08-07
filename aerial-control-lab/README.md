@@ -2,11 +2,36 @@
 
 用于学习和验证飞行器动力学、坐标变换与控制算法的最小 C++/Python 工程。
 
-C++ 工程当前只依赖 C++17 编译器、CMake 和 CTest，暂不引入 Eigen、GoogleTest 或飞控仿真依赖。Python 旋转矩阵验证使用 NumPy 和 pytest。
+C++ 工程使用标准 C++17、Eigen 3.4.1、GoogleTest 1.17.0 和 CTest；Python 旋转矩阵与四元数验证使用 NumPy 和 pytest。第三方 C++ 依赖由 CMake 固定到明确提交，避免 Ubuntu 与 Windows 获取不同版本。
+
+支持的工具链只有：
+
+- Ubuntu GCC/G++（权威主环境）；
+- Windows MinGW GCC/G++（次级验证环境）。
+
+MSVC 不受支持，CMake 检测到 MSVC 时会直接提示改用 MinGW GCC。双机角色和问题定位见 [`docs/build_troubleshooting.md`](docs/build_troubleshooting.md)。
 
 ## 构建与测试
 
-在仓库根目录依次执行：
+推荐使用与主机匹配的 CMake preset。
+
+Ubuntu：
+
+```bash
+cmake --preset ubuntu-gcc-debug
+cmake --build --preset ubuntu-gcc-debug
+ctest --preset ubuntu-gcc-debug
+```
+
+Windows PowerShell（MinGW GCC，不使用 MSVC）：
+
+```powershell
+cmake --preset windows-mingw-gcc-debug
+cmake --build --preset windows-mingw-gcc-debug
+ctest --preset windows-mingw-gcc-debug
+```
+
+在 Linux 或已经显式选定 GNU generator 的环境中，也可以使用不带 preset 的通用命令；Windows 应优先使用上面的 MinGW preset，避免 CMake 自动选择 MSVC：
 
 ```bash
 cmake -S . -B build
@@ -19,6 +44,8 @@ ctest --test-dir build --output-on-failure
 ```bash
 ./build/sanity_check
 ```
+
+使用 preset 时，程序位于对应的 `build/<preset-name>/` 目录；Windows 可执行文件带 `.exe` 后缀。
 
 运行第一周周二任务 A 的练习程序和单项测试：
 
@@ -39,6 +66,15 @@ ctest --test-dir build -R exercises.week1.wed.task_a --output-on-failure
 ```bash
 PYTHONPATH=python python -m pytest python/tests -v
 ```
+
+Windows PowerShell：
+
+```powershell
+$env:PYTHONPATH = "python"
+python -m pytest python/tests -v
+```
+
+本次验证使用的 NumPy/pytest 版本记录在 [`requirements-dev.txt`](requirements-dev.txt)。已有可用环境不必为第一周主动重装；需要精确复现时再在各自机器的独立虚拟环境中安装该文件。
 
 每周练习默认参与构建。如只需正式核心库和应用，可以配置：
 
@@ -69,7 +105,11 @@ cpp/exercises/
     ├── Tue/
     │   ├── task_A/
     │   └── task_C/
-    └── Wed/
+    ├── Wed/
+    │   ├── task_A/
+    │   ├── task_B/
+    │   └── task_C/
+    └── Thu/
         ├── task_A/
         ├── task_B/
         └── task_C/
@@ -77,3 +117,15 @@ cpp/exercises/
 
 后续周次、日期和任务遵循相同命名规则，详见
 [`cpp/exercises/README.md`](cpp/exercises/README.md)。
+
+## 第三方依赖与离线兜底
+
+首次 CMake 配置会下载固定提交的 Eigen 和 GoogleTest。若 GoogleTest 网络获取失败，可保留 CTest smoke test：
+
+```bash
+cmake -S . -B build/ctest-fallback -DAERIAL_ENABLE_GOOGLETEST=OFF
+cmake --build build/ctest-fallback
+ctest --test-dir build/ctest-fallback --output-on-failure
+```
+
+完全离线时可以使用 `-DAERIAL_FETCH_DEPENDENCIES=OFF`，但本机必须提供完全匹配版本的 Eigen3 和 GoogleTest CMake package。不要把另一台机器的 `_deps/` 或整个构建目录提交到 Git。
