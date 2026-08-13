@@ -1,6 +1,6 @@
 # 8 月 7 日（周五）任务 B：GoogleTest 与跨语言核对
 
-正式 GoogleTest 位于 [`cpp/tests/rotation_test.cpp`](../../../../tests/rotation_test.cpp)，并加入现有 `aerial_core_gtest` target。
+正式 GoogleTest 位于 [`cpp/tests/rotation_test.cpp`](../../../../tests/rotation_test.cpp)，并加入现有 `aerial_core_gtest` 构建目标。
 
 共享输入和期望值统一记录在 [`docs/rotation_test_vectors.md`](../../../../../docs/rotation_test_vectors.md)。Python 与 C++ 均以该文档为用例来源。
 

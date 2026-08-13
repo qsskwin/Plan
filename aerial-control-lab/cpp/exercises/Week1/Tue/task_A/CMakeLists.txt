@@ -30,7 +30,8 @@ target_include_directories(week1_tue_task_a_basics
 
 # 要求本练习库使用至少 C++17 的语言特性。
 # PUBLIC 会把这一要求传递给链接该库的 demo 和 tests，CMake 会根据具体编译器选择
-# 合适的标准选项，例如 GNU 编译器通常使用 -std=gnu++17 或等效设置。
+# 合适的标准选项。根工程已设置 CMAKE_CXX_EXTENSIONS=OFF，因此 GNU 编译器使用
+# 标准 C++ 模式（通常为 -std=c++17），不会启用 gnu++17 扩展模式。
 # 这里使用 target_compile_features，而不修改全局 CMAKE_CXX_STANDARD，避免练习影响其他 target。
 target_compile_features(week1_tue_task_a_basics PUBLIC cxx_std_17)
 

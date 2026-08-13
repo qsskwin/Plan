@@ -21,6 +21,9 @@ if(MSVC)
     )
 endif()
 
+# CMAKE_CXX_COMPILER_ID 是 CMake 在 project() 阶段探测出的编译器标识。
+# GNU 表示 GCC/G++；这里不直接终止其他编译器，而是发出 WARNING，便于开发者
+# 临时排查问题，同时明确提醒“该结果不属于项目已经验证过的工具链组合”。
 if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     message(WARNING
         "This compiler is not part of the verified matrix. The supported "
@@ -28,6 +31,9 @@ if(NOT CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     )
 endif()
 
+# message(STATUS ...) 只在配置阶段打印环境摘要，不会改变任何编译选项。
+# HOST 表示运行 CMake 的机器，TARGET 表示生成程序准备运行的平台；普通本机构建时
+# 两者相同，交叉编译时可能不同。记录编译器绝对路径有助于发现 PATH 中选错工具链。
 message(STATUS "Aerial host system: ${CMAKE_HOST_SYSTEM_NAME}")
 message(STATUS "Aerial target system: ${CMAKE_SYSTEM_NAME}")
 message(STATUS
@@ -36,7 +42,8 @@ message(STATUS
 )
 message(STATUS "Aerial CMake version: ${CMAKE_VERSION}")
 
-# 所有本项目 target 使用标准 C++17，不启用 gnu++17 等编译器扩展。
+# 关闭编译器特有的语言扩展。各 target 后续通过 target_compile_features 请求 C++17；
+# 两者结合后，GNU 编译器会使用标准模式（如 -std=c++17），而不是 gnu++17。
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # 加载 CTest 支持。它主要完成两件事：
@@ -46,45 +53,71 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # 用户可以在配置时通过 -DBUILD_TESTING=OFF 关闭测试目标的构建。
 include(CTest)
 
-# 默认从固定提交下载第三方依赖，确保两台机器使用相同源码版本。
-# 离线环境可设为 OFF，并自行提供完全匹配的 Eigen3/GoogleTest 包。
+# option() 会创建可由命令行覆盖的布尔缓存变量，例如：
+#
+#   cmake -S . -B build -DAERIAL_FETCH_DEPENDENCIES=OFF
+#
+# AERIAL_FETCH_DEPENDENCIES 默认从固定提交下载第三方源码，保证两台机器版本一致；
+# 设为 OFF 时改用 find_package 查找本机已安装且版本完全匹配的 CMake package。
 option(AERIAL_FETCH_DEPENDENCIES
     "Fetch pinned Eigen and GoogleTest sources during configure"
     ON
 )
+
+# GoogleTest 可以单独关闭，以便网络受阻时仍构建核心库和不依赖 GoogleTest 的
+# aerial_core_test。该开关只控制 GoogleTest target，不会关闭 CTest 总开关。
 option(AERIAL_ENABLE_GOOGLETEST
     "Build the independent GoogleTest target"
     ON
 )
 
 if(AERIAL_FETCH_DEPENDENCIES)
+    # 加载 CMake 自带的 FetchContent 模块。include() 只是引入命令定义，
+    # 此时尚未下载 Eigen 或 GoogleTest。
     include(FetchContent)
 
-    # Eigen 3.4.1, commit d71c30c47858effcbd39967097a2d99ee48db464.
+    # 固定使用 Eigen 3.4.1，对应提交 d71c30c47858effcbd39967097a2d99ee48db464。
     # 关闭 Eigen 自身的测试、文档和示例，只暴露头文件 target。
+    # CACHE BOOL 把值写入当前构建目录的 CMakeCache.txt；FORCE 确保 Eigen 子项目读取到
+    # 本项目指定的 OFF，而不会沿用旧缓存。空字符串表示不额外提供帮助文本。
     set(EIGEN_BUILD_TESTING OFF CACHE BOOL "" FORCE)
     set(EIGEN_BUILD_DOC OFF CACHE BOOL "" FORCE)
     set(EIGEN_BUILD_DEMOS OFF CACHE BOOL "" FORCE)
     set(EIGEN_BUILD_CMAKE_PACKAGE OFF CACHE BOOL "" FORCE)
     set(EIGEN_BUILD_PKGCONFIG OFF CACHE BOOL "" FORCE)
+
+    # FetchContent_Declare 只描述依赖名称、下载地址和版本来源。URL 固定到提交归档，
+    # 避免分支更新导致构建结果漂移。DOWNLOAD_EXTRACT_TIMESTAMP TRUE 使用归档中的时间戳，
+    # 避免每次解压都让所有 Eigen 头文件看起来像刚被修改而触发无意义重编译。
     FetchContent_Declare(
         Eigen
         URL
             https://gitlab.com/libeigen/eigen/-/archive/d71c30c47858effcbd39967097a2d99ee48db464/eigen-d71c30c47858effcbd39967097a2d99ee48db464.tar.gz
         DOWNLOAD_EXTRACT_TIMESTAMP TRUE
     )
+
+    # MakeAvailable 会在需要时下载、解压并把 Eigen 子项目加入当前构建。
+    # 完成后项目可以使用 Eigen 提供的导入 target：Eigen3::Eigen。
     FetchContent_MakeAvailable(Eigen)
 else()
+    # CONFIG 要求使用 Eigen 安装时提供的 Eigen3Config.cmake，而不是旧式 Find 模块；
+    # EXACT 要求版本恰好为 3.4.1，REQUIRED 表示找不到时立即让配置失败。
     find_package(Eigen3 3.4.1 EXACT CONFIG REQUIRED)
 endif()
 
-# Eigen 是第三方头文件库。将它自己的 include 目录标记为 SYSTEM，避免
-# GCC 15.2 的 -Wsign-conversion 淹没项目警告；本项目源码仍保留全部警告。
+# Eigen 是第三方头文件库。先从 Eigen3::Eigen 的接口属性中读取其公开 include 目录，
+# 再把这些路径追加为 SYSTEM include。GNU 编译器通常会降低 SYSTEM 头文件的警告级别，
+# 避免 Eigen 内部实现产生的 -Wsign-conversion 淹没项目警告；本项目源码仍保留全部警告。
 get_target_property(AERIAL_EIGEN_INCLUDE_DIRS
     Eigen3::Eigen
     INTERFACE_INCLUDE_DIRECTORIES
 )
+
+# 属性可能为空或未设置，因此先判断变量再修改 target。
 if(AERIAL_EIGEN_INCLUDE_DIRS)
+    # FetchContent 版本通常同时提供真实 target eigen 和别名 Eigen3::Eigen。
+    # CMake 不允许直接修改某些 ALIAS target 的属性，因此真实 target 存在时优先修改它；
+    # 使用系统安装包时未必有 eigen，于是退回修改可用的 Eigen3::Eigen。
     if(TARGET eigen)
         set_property(TARGET eigen APPEND PROPERTY
             INTERFACE_SYSTEM_INCLUDE_DIRECTORIES
@@ -98,8 +131,10 @@ if(AERIAL_EIGEN_INCLUDE_DIRS)
     endif()
 endif()
 
-# 编译警告只应用到本项目自己的 target，不传给 Eigen 或 GoogleTest。
-# 两个正式支持环境都由 CMake 识别为 GNU 编译器家族。
+# 定义一个可重复调用的辅助函数，参数 target_name 是待配置的 target 名称。
+# 函数本身不会立即修改任何目标，只有调用 aerial_enable_warnings(...) 时才执行。
+# 编译警告使用 PRIVATE，只应用到本项目自己的 target，不向 Eigen、GoogleTest 或其他
+# 下游 target 传播。两个正式支持环境都由 CMake 识别为 GNU 编译器家族。
 function(aerial_enable_warnings target_name)
     if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         target_compile_options(${target_name}
@@ -113,8 +148,9 @@ function(aerial_enable_warnings target_name)
     endif()
 endfunction()
 
-# 每周练习与正式核心库分开构建。默认启用，若只需要 aerial_core，
-# 可在配置时传入 -DAERIAL_BUILD_EXERCISES=OFF。
+# 每周练习与正式核心库分开构建。该 option 默认 ON，因此普通“构建全部”会包含练习。
+# 若只需要正式核心库和应用，可在配置时传入 -DAERIAL_BUILD_EXERCISES=OFF；
+# 关闭后对应 add_subdirectory 不执行，练习 target 也就不会进入构建图。
 option(AERIAL_BUILD_EXERCISES "Build Week/Day/Task learning exercises" ON)
 
 # 创建名为 aerial_core 的库目标，并指定组成该库的源文件。
@@ -153,6 +189,8 @@ target_compile_features(aerial_core PUBLIC cxx_std_17)
 # Eigen 是 aerial_core 的 PUBLIC 依赖。未来公共接口暴露 Eigen 类型时，
 # 使用者会自动继承相同的头文件搜索路径。
 target_link_libraries(aerial_core PUBLIC Eigen3::Eigen)
+
+# 调用前面定义的辅助函数，把严格警告选项仅附加到 aerial_core 自身的编译命令。
 aerial_enable_warnings(aerial_core)
 
 # 创建名为 sanity_check 的可执行目标。
@@ -170,6 +208,9 @@ aerial_enable_warnings(sanity_check)
 
 # 练习目录按 WeekN/Day/task_X 分层。每个练习使用包含周、日、任务名的
 # 唯一 target 名称，避免后续新增 Week2、Mon 或 task_B 时发生重名。
+# add_subdirectory 会立即读取子目录中的 CMakeLists.txt，并为它分配对应的构建子目录。
+# 目录存在并不代表自动参与编译；只有在这里加入，或从其他已加入目录继续加入，
+# 其中定义的 target 才会出现在根工程的构建图中。
 if(AERIAL_BUILD_EXERCISES)
     add_subdirectory(cpp/exercises/Week1/Tue/task_A)
     add_subdirectory(cpp/exercises/Week1/Wed/task_A)
@@ -203,7 +244,12 @@ if(BUILD_TESTING)
     # 获取受阻，可配置 -DAERIAL_ENABLE_GOOGLETEST=OFF，继续运行 smoke test。
     if(AERIAL_ENABLE_GOOGLETEST)
         if(AERIAL_FETCH_DEPENDENCIES)
+            # 不需要把 GoogleTest 安装到系统，因此关闭其 install() 规则，减少无关目标。
+            # CACHE BOOL FORCE 的含义与上面的 Eigen 选项相同：覆盖子项目可能读取的旧缓存。
             set(INSTALL_GTEST OFF CACHE BOOL "" FORCE)
+
+            # 固定到 GoogleTest 1.17.0 对应提交。Declare 记录来源，MakeAvailable 才真正
+            # 下载并加入子项目；完成后会提供 GTest::gtest_main 等 CMake target。
             FetchContent_Declare(
                 googletest
                 URL
@@ -212,13 +258,19 @@ if(BUILD_TESTING)
             )
             FetchContent_MakeAvailable(googletest)
         else()
+            # 离线/系统包模式下要求恰好为 1.17.0，并使用它提供的 Config package。
             find_package(GTest 1.17.0 EXACT CONFIG REQUIRED)
         endif()
 
+        # 把普通 Eigen 测试和旋转工具测试编译到同一个 GoogleTest 可执行程序中。
+        # 两个源文件都不需要自己提供 main()，因为下面会链接 GTest::gtest_main。
         add_executable(aerial_core_gtest
             cpp/tests/eigen_vector_test.cpp
             cpp/tests/rotation_test.cpp
         )
+
+        # PRIVATE aerial_core：测试可以调用正式核心库，但该依赖无需继续传播。
+        # PRIVATE GTest::gtest_main：提供 GoogleTest 框架和默认 main() 入口。
         target_link_libraries(aerial_core_gtest
             PRIVATE
                 aerial_core
@@ -226,6 +278,9 @@ if(BUILD_TESTING)
         )
         aerial_enable_warnings(aerial_core_gtest)
 
+        # 加载 CMake 随 GoogleTest 集成提供的辅助命令 gtest_discover_tests。
+        # 它会在构建后运行测试程序的 --gtest_list_tests，把每个 TEST(...) 自动注册成
+        # 独立的 CTest 测试；DISCOVERY_TIMEOUT 30 限制发现过程最多等待 30 秒。
         include(GoogleTest)
         gtest_discover_tests(aerial_core_gtest DISCOVERY_TIMEOUT 30)
     endif()

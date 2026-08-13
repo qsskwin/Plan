@@ -48,7 +48,7 @@ ctest --test-dir build/week1-friday-clean --output-on-failure
 失败 0
 ```
 
-其中新增的 `RotationUtilitiesTest` 通过 7/7，既有 Eigen、smoke test、周二和周三练习测试也全部通过。
+其中新增的 `RotationUtilitiesTest` 通过 7/7，既有 Eigen、冒烟测试、周二和周三练习测试也全部通过。
 
 ## 4. Python 测试结果
 

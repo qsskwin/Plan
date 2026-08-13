@@ -6,7 +6,7 @@
 
 - 公共接口：[`cpp/include/core/rotation.hpp`](../../../../include/core/rotation.hpp)
 - 核心实现：[`cpp/src/rotation.cpp`](../../../../src/rotation.cpp)
-- 构建 target：根 [`CMakeLists.txt`](../../../../../CMakeLists.txt) 中的 `aerial_core`
+- 构建目标：根 [`CMakeLists.txt`](../../../../../CMakeLists.txt) 中的 `aerial_core`
 
 接口包括：
 
