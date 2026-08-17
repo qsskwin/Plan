@@ -285,3 +285,7 @@ if(BUILD_TESTING)
         gtest_discover_tests(aerial_core_gtest DISCOVERY_TIMEOUT 30)
     endif()
 endif()
+
+if(AERIAL_BUILD_EXERCISES)
+    add_subdirectory(cpp/exercises/Week2/Mon)
+endif()

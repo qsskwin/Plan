@@ -9,5 +9,6 @@
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.testing.cwd": "${workspaceFolder}/aerial-control-lab/python"
+    "python.testing.cwd": "${workspaceFolder}/aerial-control-lab/python",
+    "C_Cpp.errorSquiggles": "enabled"
 }

@@ -25,14 +25,14 @@
 
 ### Windows 次级验证环境
 
-记录日期：2026-08-06。
+记录日期：2026-08-17。
 
 | 项目 | 版本 |
 | --- | --- |
 | 操作系统 | Windows 11 专业版，10.0.26200，64 位 |
 | C++ 编译器 | MinGW GCC/G++ 15.2.0，UCRT |
 | 构建工具 | GNU Make 4.4.1（`mingw32-make`） |
-| CMake | 3.28.3 便携版（系统 PATH 中原本未安装，临时用于周四验证） |
+| CMake | 4.4.2（`C:\Program Files\CMake\bin\cmake.exe`） |
 | Python | 3.12.4（Anaconda） |
 | Python 测试依赖 | NumPy 1.26.4、pytest 7.4.4 |
 | 明确不使用 | MSVC、Visual Studio CMake generator |
@@ -54,6 +54,8 @@ ctest --test-dir build --output-on-failure
 ```
 
 Eigen 和 GoogleTest 从周四开始由 CMake 获取固定版本。首次配置需要网络；依赖版本、离线兜底和跨平台故障定位见 [`build_troubleshooting.md`](build_troubleshooting.md)。
+
+2026-08-17 复核时，实际使用的工具版本为 CMake 4.4.2、MinGW G++ 15.2.0 和 Python 3.12.4。Eigen 源码中的 CMake 策略警告来自上游依赖；当前项目可以正常配置和构建，因此不修改 `build/**/_deps`，也不重新安装 Eigen。
 
 ## 8 月 6 日 Windows 验证结果
 
