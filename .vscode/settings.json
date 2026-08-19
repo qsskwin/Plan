@@ -5,10 +5,10 @@
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
     "python.testing.pytestArgs": [
-        "tests"
+       "python/exercises"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
-    "python.testing.cwd": "${workspaceFolder}/aerial-control-lab/python",
+    "python.testing.cwd": "${workspaceFolder}/aerial-control-lab",
     "C_Cpp.errorSquiggles": "enabled"
 }
