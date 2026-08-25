@@ -105,7 +105,13 @@ ctest --preset windows-mingw-gcc-debug -R RotationUtilitiesTest
 cmake -S . -B build -DAERIAL_BUILD_EXERCISES=OFF
 ```
 
-需要验证干净构建时，删除 `build/` 后重新执行上述三条命令。
+需要验证干净构建时，不删除现有构建目录；应选择一个尚不存在、路径明确的新构建目录。例如在 Windows PowerShell 中运行：
+
+```powershell
+cmake --preset windows-mingw-gcc-debug -B .\build\week2-sat-clean-20260822
+cmake --build .\build\week2-sat-clean-20260822 --parallel 4
+ctest --test-dir .\build\week2-sat-clean-20260822 --output-on-failure
+```
 
 ## 目录结构
 
