@@ -289,5 +289,8 @@ endif()
 if(AERIAL_BUILD_EXERCISES)
     add_subdirectory(cpp/exercises/Week2/Mon)
     add_subdirectory(cpp/exercises/Week2/Fri)    
+    add_subdirectory(cpp/exercises/Week3/Mon/task_B)
+    add_subdirectory(cpp/exercises/Week3/Mon/task_C)    
+    add_subdirectory(cpp/exercises/Week3/Mon/task_D)
 endif()
 
