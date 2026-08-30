@@ -1,14 +1,15 @@
-
 {
     "cmake.sourceDirectory": "${workspaceFolder}/aerial-control-lab",
     "cmake.buildDirectory": "${workspaceFolder}/aerial-control-lab/build",
     "python-envs.defaultEnvManager": "ms-python.python:conda",
     "python-envs.defaultPackageManager": "ms-python.python:conda",
     "python.testing.pytestArgs": [
-       "python/exercises"
+        "python/exercises"
     ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.cwd": "${workspaceFolder}/aerial-control-lab",
-    "C_Cpp.errorSquiggles": "enabled"
+    "C_Cpp.errorSquiggles": "enabled",
+    "C_Cpp.clang_format_fallbackStyle": "Google",
+    "C_Cpp.clang_format_sortIncludes": true
 }
