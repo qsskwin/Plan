@@ -159,6 +159,7 @@ option(AERIAL_BUILD_EXERCISES "Build Week/Day/Task learning exercises" ON)
 # 在未设置 BUILD_SHARED_LIBS 的默认情况下，它会被构建为静态库 libaerial_core.a。
 # 后续坐标变换、动力学和控制算法的公共实现可以继续加入这个目标。
 add_library(aerial_core
+    cpp/src/integrators.cpp
     cpp/src/project_info.cpp
     cpp/src/rotation.cpp
 )
@@ -262,10 +263,11 @@ if(BUILD_TESTING)
             find_package(GTest 1.17.0 EXACT CONFIG REQUIRED)
         endif()
 
-        # 把普通 Eigen 测试和旋转工具测试编译到同一个 GoogleTest 可执行程序中。
-        # 两个源文件都不需要自己提供 main()，因为下面会链接 GTest::gtest_main。
+        # 把普通 Eigen、积分器和旋转工具测试编译到同一个 GoogleTest 可执行程序中。
+        # 各源文件都不需要自己提供 main()，因为下面会链接 GTest::gtest_main。
         add_executable(aerial_core_gtest
             cpp/tests/eigen_vector_test.cpp
+            cpp/tests/integrators_test.cpp
             cpp/tests/rotation_test.cpp
         )
 
@@ -298,4 +300,3 @@ if(AERIAL_BUILD_EXERCISES)
     add_subdirectory(cpp/exercises/Week3/Wed/task_B)
     add_subdirectory(cpp/exercises/Week3/Thu/task_D)
 endif()
-
