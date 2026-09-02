@@ -97,6 +97,22 @@ Windows PowerShell：
 ctest --preset windows-mingw-gcc-debug -R RotationUtilitiesTest
 ```
 
+运行正式 C++ 积分器测试（Windows PowerShell；应先完成对应 preset 的配置）：
+
+```powershell
+cmake --build --preset windows-mingw-gcc-debug --target aerial_core_gtest
+ctest --preset windows-mingw-gcc-debug -R "^CoreIntegrator" --output-on-failure
+```
+
+运行正式 Python 积分器定向测试和 Python 全量测试。本机已核对的解释器为
+`D:\anaconda\python.exe`，`PYTHONPATH` 设置仅对当前 PowerShell 会话及其子进程生效：
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path .\python).Path
+& D:\anaconda\python.exe -m pytest .\python\tests\test_integrators.py -q
+& D:\anaconda\python.exe -m pytest .\python -q
+```
+
 本次验证使用的 NumPy/pytest 版本记录在 [`requirements-dev.txt`](requirements-dev.txt)。已有可用环境不必为第一周主动重装；需要精确复现时再在各自机器的独立虚拟环境中安装该文件。
 
 每周练习默认参与构建。如只需正式核心库和应用，可以配置：

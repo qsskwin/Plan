@@ -104,10 +104,10 @@ TEST(CoreIntegratorTest, Rk4ErrorIsSmallerThanEulerAtSameStepSize) {
     constexpr int step_count = 20;
     constexpr double final_time = 2.0;
 
-    const double euler_error = oscillatorError(
+    const double euler_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::eulerStep, dt, step_count),
         final_time);
-    const double rk4_error = oscillatorError(
+    const double rk4_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::rk4Step, dt, step_count),
         final_time);
 
@@ -115,18 +115,18 @@ TEST(CoreIntegratorTest, Rk4ErrorIsSmallerThanEulerAtSameStepSize) {
 }
 
 TEST(CoreIntegratorTest, EulerErrorFallsWhenStepSizeIsHalved) {
-    const double coarse_error = oscillatorError(
+    const double coarse_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::eulerStep, 0.2, 10), 2.0);
-    const double fine_error = oscillatorError(
+    const double fine_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::eulerStep, 0.1, 20), 2.0);
 
     EXPECT_LT(fine_error, coarse_error);
 }
 
 TEST(CoreIntegratorTest, Rk4ErrorFallsWhenStepSizeIsHalved) {
-    const double coarse_error = oscillatorError(
+    const double coarse_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::rk4Step, 0.4, 5), 2.0);
-    const double fine_error = oscillatorError(
+    const double fine_error = oscillatorErroeulerStepr(
         simulateOscillator(aerial_control::rk4Step, 0.2, 10), 2.0);
 
     EXPECT_LT(fine_error, coarse_error);
