@@ -127,6 +127,7 @@ def test_invalid_total_thrust_is_rejected(invalid_thrust):
 @pytest.mark.parametrize(
     "invalid_state",
     [
+        np.zeros((2, 3)),  # Wrong shape
         np.array([1.0, 2.0, 3.0, 4.0, 5.0]),  # Too short
         np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]),  # Too long
         np.array([1.0, 2.0, np.nan, 4.0, 5.0, 6.0]),  # Contains NaN
@@ -136,5 +137,76 @@ def test_invalid_total_thrust_is_rejected(invalid_thrust):
 )
 def test_invalid_state_is_rejected(invalid_state):
     with pytest.raises(ValueError):
-        # 使用 invalid_state 调用 point_mass_derivative
-        # 质量、推力和四元数必须合法
+        point_mass_derivative(
+            0.0,
+            invalid_state,
+            mass_kg=    1.0,
+            total_thrust_n= 0.0,
+            q_nb=[1.0, 0.0, 0.0, 0.0],
+        )
+def test_call_does_not_modify_input_state():
+    state = np.array(
+        [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+        dtype=float,
+    )
+    original = state.copy()
+
+    point_mass_derivative(
+        0.0,
+        state,
+        mass_kg=    1.0,
+        total_thrust_n= 0.0,
+        q_nb=[1.0, 0.0, 0.0, 0.0],
+    )
+    np.testing.assert_array_equal(state, original)
+
+
+@pytest.mark.parametrize(
+    "invalid_quaternion",
+    [
+        [1.0, 0.0, 0.0],
+        [0.0, 0.0, 0.0, 0.0],
+        [1.0, np.nan, 0.0, 0.0],
+        [1.0, 0.0, np.inf, 0.0],
+    ],
+)
+def test_invalid_quaternion_is_rejected(invalid_quaternion):
+    state = np.zeros(6)
+
+    with pytest.raises(ValueError):
+        point_mass_derivative(
+            0.0,
+            state,
+            mass_kg=1.0,
+            total_thrust_n=0.0,
+            q_nb=invalid_quaternion,
+        )
+
+
+def test_non_unit_quaternion_is_normalized():
+    state = np.array([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+    phi = np.deg2rad(10.0)
+    unit_q = np.array([np.cos(phi / 2.0), np.sin(phi / 2.0), 0.0, 0.0])
+    scaled_q = 3.0 * unit_q
+
+    derivative_from_unit_q = point_mass_derivative(
+        0.0,
+        state,
+        mass_kg=1.5,
+        total_thrust_n=1.5 * STANDARD_GRAVITY_MPS2,
+        q_nb=unit_q,
+    )
+    derivative_from_scaled_q = point_mass_derivative(
+        0.0,
+        state,
+        mass_kg=1.5,
+        total_thrust_n=1.5 * STANDARD_GRAVITY_MPS2,
+        q_nb=scaled_q,
+    )
+
+    np.testing.assert_allclose(
+        derivative_from_scaled_q,
+        derivative_from_unit_q,
+        atol=1e-12,
+        rtol=0.0,
+    )
