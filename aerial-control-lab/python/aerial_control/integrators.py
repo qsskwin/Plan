@@ -8,7 +8,7 @@ import numpy as np
 
 Derivative = Callable[[float, np.ndarray], np.ndarray]
 
-
+# 状态数据校验私有函数
 def _validate_state(state: np.ndarray) -> None:
     if not isinstance(state, np.ndarray):
         raise TypeError("state must be a NumPy array")
@@ -21,7 +21,7 @@ def _validate_state(state: np.ndarray) -> None:
     if not np.all(np.isfinite(state)):
         raise ValueError("state must contain only finite values")
 
-
+# 时间步长校验私有函数
 def _validate_dt(dt: float) -> float:
     if isinstance(dt, (bool, np.bool_)) or not isinstance(dt, Real):
         raise TypeError("dt must be a real number")
@@ -31,7 +31,7 @@ def _validate_dt(dt: float) -> float:
         raise ValueError("dt must be positive and finite")
     return dt_value
 
-
+# 微分方程右端函数（导数函数）的包装校验函数
 def _evaluate_derivative(
     derivative: Derivative, t: float, state: np.ndarray
 ) -> np.ndarray:

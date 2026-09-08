@@ -1,0 +1,8 @@
+add_executable(week4_mon_task_b_rk4_rewrite
+    rk4_oscillator_rewrite.cpp
+)
+target_compile_features(week4_mon_task_b_rk4_rewrite PRIVATE cxx_std_17)
+
+target_link_libraries(week4_mon_task_b_rk4_rewrite PRIVATE aerial_core)
+
+aerial_enable_warnings(week4_mon_task_b_rk4_rewrite)

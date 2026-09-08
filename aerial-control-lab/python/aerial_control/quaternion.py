@@ -11,8 +11,8 @@ __all__ = [
     "quat_multiply",
     "quat_normalize",
     "quat_rotate_vector",
-]
-
+] 
+# `__all__`：控制 `from xxx import *` 时导出哪些公开 API。
 
 def _as_finite_vector(
     value: Sequence[float] | np.ndarray,
@@ -26,7 +26,7 @@ def _as_finite_vector(
     if not np.all(np.isfinite(array)):
         raise ValueError(f"{name} must contain only finite values")
     return array
-
+# `*` 之后的参数**必须使用关键字传参，不能按位置传参**。强制可读性，防止参数顺序搞错。
 
 def quat_normalize(quaternion: Sequence[float] | np.ndarray) -> np.ndarray:
     """Return a unit copy of a scalar-first quaternion ``[w, x, y, z]``.
@@ -42,7 +42,7 @@ def quat_normalize(quaternion: Sequence[float] | np.ndarray) -> np.ndarray:
         raise ValueError("cannot normalize a zero-norm quaternion")
     return q / norm
 
-
+#  四元数共轭
 def quat_conjugate(quaternion: Sequence[float] | np.ndarray) -> np.ndarray:
     """Return the conjugate ``[w, -x, -y, -z]`` of a quaternion."""
 
@@ -51,7 +51,7 @@ def quat_conjugate(quaternion: Sequence[float] | np.ndarray) -> np.ndarray:
     conjugate[1:] *= -1.0
     return conjugate
 
-
+# 哈密顿乘积 
 def quat_multiply(
     left: Sequence[float] | np.ndarray,
     right: Sequence[float] | np.ndarray,
@@ -73,7 +73,7 @@ def quat_multiply(
         dtype=float,
     )
 
-
+## `quat_rotate_vector` 四元数旋转三维矢量 就是四元数如何旋转三维向量的。 q x v x q* 其中 q* 是 q 的共轭。
 def quat_rotate_vector(
     quaternion: Sequence[float] | np.ndarray,
     vector: Sequence[float] | np.ndarray,
@@ -85,10 +85,10 @@ def quat_rotate_vector(
     """
 
     unit_q = quat_normalize(quaternion)
-    v = _as_finite_vector(vector, size=3, name="vector")
-    pure_vector = np.concatenate(([0.0], v))
+    v = _as_finite_vector(vector, size=3, name="vector") 
+    pure_vector = np.concatenate(([0.0], v)) # 将三维向量 v 转换为纯四元数 [0, v]
     rotated = quat_multiply(
         quat_multiply(unit_q, pure_vector),
         quat_conjugate(unit_q),
-    )
+    ) 
     return rotated[1:]
