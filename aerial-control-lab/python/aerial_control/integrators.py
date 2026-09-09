@@ -70,7 +70,7 @@ def euler_step(
     _validate_result(result)
     return result
 
-
+# 输入微分方程、状态、时间和时间步长，返回下一步的状态
 def rk4_step(
     derivative: Derivative, t: float, state: np.ndarray, dt: float
 ) -> np.ndarray:
