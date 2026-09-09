@@ -162,6 +162,7 @@ add_library(aerial_core
     cpp/src/integrators.cpp
     cpp/src/project_info.cpp
     cpp/src/rotation.cpp
+    cpp/src/point_mass.cpp
 )
 
 # 设置 aerial_core 的公共头文件搜索路径。
@@ -269,6 +270,7 @@ if(BUILD_TESTING)
             cpp/tests/eigen_vector_test.cpp
             cpp/tests/integrators_test.cpp
             cpp/tests/rotation_test.cpp
+            cpp/tests/point_mass_test.cpp
         )
 
         # PRIVATE aerial_core：测试可以调用正式核心库，但该依赖无需继续传播。

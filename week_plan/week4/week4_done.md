@@ -213,3 +213,57 @@
 - 实际用时和帮助情况未提供；本轮 Codex 未读取或修改题解代码，因此不根据 AC 结果推断其 I/H/G 来源。
 - 哑节点用途、尾指针不变量，以及空链表、重复值、剩余链表接入的解释尚未进行验收，保持“未验证”，不因 AC 自动补记为已掌握。
 - 本阶段只更新项目日期 `2026-09-02（周三）` 下的进度记录，没有运行代码、测试或前序任务。
+
+## 2026-09-03（周四）滚动记录
+
+### 任务 A：C++ 正式接口与动力学实现
+
+- 新增 `cpp/include/core/point_mass.hpp` 和 `cpp/src/point_mass.cpp`，并将新源文件加入根目录 `CMakeLists.txt` 的 `aerial_core` target；未新增测试或演示 target。
+- 本人在 include、声明与 Eigen API 的小步骤提示后，亲自完成头文件、参数/输入结构、六维状态与有限性检查、质量/推力检查、FRD 推力构造、B→N 旋转、NED 加速度及六维导数组装，核心实现记为 **H**。
+- 头文件一度误写入函数体；经指出声明与定义的区别后，本人恢复为以分号结束的纯声明。
+- 实现保持状态顺序 `[p_n,p_e,p_d,v_n,v_e,v_d]`，FRD 推力为 `[0,0,-T]`，通过现有 `rotateBodyToNed` 得到 NED 推力，并计算 `a_N=f_T^N/m+[0,0,g]`；四元数归一化与非法值拒绝复用现有旋转模块。
+- 本人按提示完成 CMake 单行接入，记为 **H**。Codex 随后只直接整理了两个新文件和 CMake 新增行的局部格式，该格式整理与本段进度文档记为 **G**，未改动本人完成的核心逻辑。
+- 定向构建命令：从 `aerial-control-lab` 根目录运行 `cmake --build build/windows-mingw-gcc-debug --target aerial_core -j 4`。实际重新配置并编译 `cpp/src/point_mass.cpp`，成功链接 `libaerial_core.a`，结果为 `Built target aerial_core`。
+- 本次没有项目源码警告；配置阶段仅有 Eigen 上游已有的 CMake `CMP0146` 弃用提示。两个新文件无尾随空白，CMake 新增行的限定 `git diff --check` 通过；既有 CMake 其他行的历史空白保持未动。
+- 本次只构建 `aerial_core`，没有运行 CTest、GoogleTest、pytest 或周三脚本。任务 A 的接口、实现与构建接入已完成；动力学行为和非法输入尚未经 C++ GoogleTest 验证，下一项为周四任务 B 的首个代表性测试。
+
+### 任务 B：主要 GoogleTest
+
+- 本人根据测试目标与 GoogleTest API 提示建立 `cpp/tests/point_mass_test.cpp`，并将其加入 `aerial_core_gtest`；首个代表性测试为 `PointMassDerivativeTest.PositionDerivativeEqualsVelocity`。
+- 本人完成六维非零状态、合法质量、零推力、单位姿态、导数调用及六维/位置导数断言的初版，并在命名空间提示后引入 `aerial_control` 中的四个符号，该主体过程记为 **H**。
+- 首次定向编译失败：头文件已被正确找到，但 `StateVector`、`PointMassParameters`、`PointMassInput` 和 `pointMassDerivative` 未使用 `aerial_control` 命名空间；补充局部 `using` 后又因匿名命名空间缺少结尾右花括号失败。这两次均保留为定位过程，不记为测试通过。
+- 用户明确要求 Codex 直接处理最后局部修正；Codex 直接完成返回值的 `const` 直接初始化、小写命名、将三个断言改为与输入速度分量对应、补齐匿名命名空间结尾及局部格式，这些修改记为 **G**。因此当前首个测试整体来源为 **H/G 混合**，不补记为完整独立实现。
+- 定向编译命令：`cmake --build build/windows-mingw-gcc-debug --target aerial_core_gtest -j 4`；实际成功编译 `point_mass_test.cpp` 并链接 `aerial_core_gtest.exe`。
+- 定向测试命令：`build/windows-mingw-gcc-debug/aerial_core_gtest.exe --gtest_filter=PointMassDerivativeTest.PositionDerivativeEqualsVelocity`；实际只运行并通过 1 个新测试，结果为 `1 test from 1 test suite`、`1 passed`。
+- 本次没有运行其他 GoogleTest、CTest、pytest 或周三脚本；这不是 `aerial_core_gtest` 全量回归结果。下一项为本人编写“零推力只产生 NED 正 Down 重力”的首个物理工况测试。
+- 本人随后完成 `PointMassDerivativeTest.ZeroThrustProducesNedGravity`，使用六维零状态、正质量、零标量推力和单位姿态，断言导数加速度分量为 `[0,0,kStandardGravityMps2]`，验证 NED Down 为正；代码由本人根据局部测试要求完成，记为 **H**。
+- 定向编译 `aerial_core_gtest` 成功；随后只使用过滤器运行 `PointMassDerivativeTest.ZeroThrustProducesNedGravity`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest 或前序任务；下一项为单位姿态下 `T=mg` 的水平悬停测试。
+- 本人完成 `PointMassDerivativeTest.HoverThrustCancelsNedGravity`，最终使用 `m=1.5 kg`、`T=m*kStandardGravityMps2` 和单位姿态，以绝对容差 `1e-12` 检查三个 NED 加速度分量为零，记为 **H**。
+- 悬停测试初版使用 `m=1.0 kg` 且使用精确相等断言，会削弱对“推力除以质量”的验证并忽略浮点误差；经提示改为非单位质量与 `EXPECT_NEAR`。一次修正还将测试函数的右花括号误标成命名空间结尾；本人在作用域提示后补齐两层结尾。两个未收口版本均未运行测试。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.HoverThrustCancelsNedGravity`，实际结果为 `1 test from 1 test suite`、`1 passed`。本次没有运行其他 GoogleTest、CTest、pytest 或周三脚本；下一项为固定正滚转的 East 加速度测试。
+- 本人完成 `PointMassDerivativeTest.PositiveRollProducesExpectedEastAcceleration`：使用 `m=1.5 kg`、`phi=10°`、`q_NB=[cos(phi/2),sin(phi/2),0,0]` 与 `T=mg/cos(phi)`，以绝对容差 `1e-12` 检查 North/Down 加速度为零、East 加速度为 `g*tan(phi)`，代码在四元数构造、角度与推力补偿的局部提示后由本人完成，记为 **H**。
+- 初版测试的 `<cmath>` include 未写完整，并仍使用普通悬停推力 `mg`；经提示修正 include，保持 Eigen 构造函数的 `(w,x,y,z)` 顺序，并将推力改为滚转补偿值。四元数半角与 East 解析值原本正确。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.PositiveRollProducesExpectedEastAcceleration`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest、CTest、pytest 或周三脚本。
+- 关于 `a_e=g*tan(phi)`，Codex 已提供从非负标量 `T`、FRD 力向量 `[0,0,-T]`、B→N 旋转、除以质量到 Down 补偿的分步推导；该解释是提示，尚未由本人独立复述验证。
+- 用户明确要求 Codex 直接完成当前零质量测试；Codex 新增 `PointMassDerivativeTest.ZeroMassIsRejected`，使用合法六维零状态、零推力、单位姿态，仅将质量设为 `0.0`，并用 `EXPECT_THROW` 检查 `std::invalid_argument`。该测试代码记为 **G**，不能改记为本人代表性非法输入测试。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.ZeroMassIsRejected`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest、CTest、pytest 或周三脚本；下一项由本人完成负推力的代表性非法输入测试。
+- 用户随后要求 Codex 直接完成负推力测试，并一度认为只需把推力改为 `0`；Codex 明确指出 `T=0` 是自由落体所需的合法输入，非法测试必须使用 `T<0`，随后直接新增 `PointMassDerivativeTest.NegativeThrustIsRejected`，以 `-1.0 N` 和其余合法输入检查 `std::invalid_argument`。该测试代码记为 **G**。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.NegativeThrustIsRejected`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest、CTest、pytest 或周三脚本；零推力合法与负推力非法的区别已提示，但尚未由本人独立复述验证。
+- 用户明确要求 Codex 直接完成状态维度测试；Codex 新增 `PointMassDerivativeTest.InvalidStateDimensionIsRejected`，仅将状态设为五维，质量、零推力与单位姿态均保持合法，并检查抛出 `std::invalid_argument`。该测试代码记为 **G**。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.InvalidStateDimensionIsRejected`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest、CTest、pytest 或周三脚本；这只覆盖一个错误长度，不代表非有限状态或其他维度变体已经验证。
+- 用户明确要求 Codex 直接完成输入状态不变性测试；Codex 新增 `PointMassDerivativeTest.DoesNotModifyInputState`，使用六个非零分量、调用前副本和其余合法输入，显式丢弃导数返回值后以零容差 `isApprox` 检查原状态保持不变。该测试代码记为 **G**。
+- 定向编译 `aerial_core_gtest` 成功；随后只运行 `PointMassDerivativeTest.DoesNotModifyInputState`，实际结果为 `1 test from 1 test suite`、`1 passed`。没有运行其他 GoogleTest、CTest、pytest 或周三脚本；这不替代非有限状态、四元数边界或全量回归。
+- 用户随后明确要求 Codex 直接完成周四任务 B 的剩余部分。Codex 在现有测试文件中新增负/非有限质量、非有限推力、非有限状态、零范数/非有限四元数和非单位四元数归一化测试，并新增复用正式 `rk4Step` 的自由落体、水平悬停、固定正滚转三条完整轨迹测试；这些新增测试、辅助比较函数及局部整理全部记为 **G**。
+- 非法输入覆盖现为：质量 `0`、负数、NaN、正负 Inf；推力负数、NaN、正负 Inf；五维状态与六维状态中的 NaN、正负 Inf；零范数和含非有限系数的 `Eigen::Quaterniond`。C++ 接口使用固定类型 `Eigen::Quaterniond`，错误“四元数形状”在编译期由类型约束，不存在与 Python 二维数组相同的运行时形状分支。
+- `PointMassDerivativeTest.NonunitQuaternionIsNormalized` 比较同一非平凡正滚转单位四元数及其 3 倍缩放输入的完整六维导数，绝对容差为 `1e-12`，验证动力学正确复用旋转模块的归一化行为。
+- 三条正式 RK4 轨迹均从六维零状态和 `t0=0` 开始，以整数步索引构造时刻并检查每个状态全程有限：自由落体使用 `dt=0.01 s`、200 次更新/201 个状态；悬停使用 `dt=0.01 s`、1000 次更新/1001 个状态；正滚转使用 `phi=10°`、`T=mg/cos(phi)`、`dt=0.01 s`、200 次更新/201 个状态。
+- 每个记录时刻均逐分量与独立解析状态比较：自由落体使用 `p_d=0.5*g*t^2`、`v_d=g*t`；悬停六维状态为零；正滚转使用 `a_e=g*tan(phi)`、`p_e=0.5*a_e*t^2`、`v_e=a_e*t`。统一采用绝对容差 `1e-10`；当前测试证明所有比较受该阈值约束，但没有单独输出精确最大位置/速度误差，精确误差数值留待后续跨语言整理。
+- 定向构建 `cmake --build build/windows-mingw-gcc-debug --target aerial_core_gtest -j 4` 成功，无项目源码警告。限定运行 `aerial_core_gtest.exe --gtest_filter=PointMassDerivativeTest.*`，实际收集并通过 `16 tests from 1 test suite`，总用时约 `27 ms`。
+- 本次只运行周四 `PointMassDerivativeTest.*`，没有运行其他 GoogleTest、CTest、pytest 或周三脚本；不能写成 C++ 全量回归。任务 B 的功能与行为覆盖已收口，整体来源为 **H/G 混合**：本人完成的首批结构与三个主要单步物理工况保留 H/H-G 来源，Codex 直接补齐的边界、输入不变性与完整轨迹保持 G；完整轨迹代码不能作为本人独立实现证据。
+
+### 任务 C：新做 141
+
+- 141. 环形链表：用户报告已经 **AC**，掌握等级记录为 **C（用户自评）**。
+- 实际用时、获得的帮助及题解代码位置未提供；本轮 Codex 未读取或修改题解代码，因此不根据 AC 推断其 I/H/G 来源。
+- 快慢指针必然相遇的原因，以及空链表、单节点无环、单节点自环和普通无环链表四类边界尚未进行解释验收，保持“未验证”；当前 C 级进入后续复习队列。
+- 本阶段只更新项目日期 `2026-09-03（周四）` 下的进度记录，没有运行代码或测试。至此周四任务 A/B/C 均已执行，下一阶段按计划进入周五跨语言演示与质量偏差实验。
