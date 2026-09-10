@@ -115,6 +115,81 @@ $env:PYTHONPATH = (Resolve-Path .\python).Path
 
 本次验证使用的 NumPy/pytest 版本记录在 [`requirements-dev.txt`](requirements-dev.txt)。已有可用环境不必为第一周主动重装；需要精确复现时再在各自机器的独立虚拟环境中安装该文件。
 
+## 第四周三维质点平动与跨语言演示
+
+`aerial_core` 和 Python 包均提供固定姿态下的三维质点平动模型。状态顺序为
+`[p_n,p_e,p_d,v_n,v_e,v_d]`：前三项是 NED 位置（m），后三项是 NED
+速度（m/s），其导数依次为速度和加速度。
+
+- NED 世界系的 `+z` 指向 Down；FRD 机体系的 `+z` 也指向 Down。
+- `q_NB/R_NB` 把机体系 B 中的向量转换到 NED 世界系 N。
+- Python 四元数数组顺序为 `[w,x,y,z]`；`Eigen::Quaterniond` 构造参数顺序
+  为 `(w,x,y,z)`，但 `coeffs()` 返回 `(x,y,z,w)`。
+- `T` 是非负总推力标量，实际 FRD 推力向量为 `[0,0,-T]`；NED 重力为
+  `[0,0,+g]`，其中 `g=9.80665 m/s²`。
+- 模型只包含平动；质量、姿态和推力在每个工况中保持常量，不包含姿态积分、
+  转动动力学、执行器或反馈控制器。
+- Python 演示复用 `simulate_fixed_step` 和 `rk4_step`，C++ 演示复用
+  `rk4Step`、`pointMassDerivative` 和 `rotateBodyToNed`。两端均使用双精度、
+  整数步索引，并保存初始状态和终点。
+
+Windows PowerShell 中运行三个统一工况：
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path .\python).Path
+& D:\anaconda\python.exe .\python\exercises\Week4\Fri\task_A\point_mass_demo.py
+
+cmake --preset windows-mingw-gcc-debug
+cmake --build .\build\windows-mingw-gcc-debug --target point_mass_demo -j 4
+& .\build\windows-mingw-gcc-debug\cpp\exercises\Week4\Fri\task_A\point_mass_demo.exe
+
+& D:\anaconda\python.exe .\python\exercises\Week4\Fri\task_B\compare_point_mass_outputs.py
+```
+
+两端使用相同的六维零初态和 `dt=0.01 s`。自由落体使用 `m=1.5 kg`、
+`T=0`、单位姿态和 `tf=2 s`；悬停使用 `T=mg=14.709975 N`、单位姿态和
+`tf=10 s`；固定正滚转使用 `roll=10°`、`T=mg/cos(roll)` 和 `tf=2 s`。
+每个保存时刻均与独立解析解比较，并再次逐时刻、逐分量比较 Python/C++；
+使用 `rtol=0`、位置 `atol=1e-10 m`、速度 `atol=1e-10 m/s`。
+
+| 工况 | 样本数 | Python/C++→解析最大位置误差 (m) | Python/C++→解析最大速度误差 (m/s) | Python↔C++位置/速度误差 |
+|---|---:|---:|---:|---:|
+| 自由落体 | 201 | `2.1316282072803006e-14` | `3.907985046680551e-14` | `0 / 0` |
+| 水平悬停 | 1001 | `0` | `0` | `0 / 0` |
+| 固定正滚转 | 201 | `9.3258734068513149e-15` | `1.3322676295501878e-14` | `0 / 0` |
+
+质量偏差实验保持名义悬停推力 `14.709975 N`，只把实际质量改为
+`1.65 kg`，使用单位姿态、零初态、`dt=0.01 s` 和 `tf=2 s`。运行命令为：
+
+```powershell
+$env:PYTHONPATH = (Resolve-Path .\python).Path
+& D:\anaconda\python.exe .\python\exercises\Week4\Fri\task_A\point_mass_demo.py --mass-bias-only
+& .\build\windows-mingw-gcc-debug\cpp\exercises\Week4\Fri\task_A\point_mass_demo.exe --mass-bias-only
+& D:\anaconda\python.exe .\python\exercises\Week4\Fri\task_C\compare_mass_bias_outputs.py
+```
+
+此时 Down 合力为 `1.4709975 N`，Down 加速度为
+`0.8915136363636364 m/s²`；`t=2 s` 的解析位置为
+`[0,0,1.783027272727273] m`，解析速度为
+`[0,0,1.783027272727273] m/s`。Python/C++→解析的最大位置/速度误差分别为
+`2.886579864025407e-15 m` 和 `4.6629367034256575e-15 m/s`，两端完整轨迹
+互差为零。
+
+原推力只是按名义质量计算的固定前馈平衡输入。质量变化后，它不会依据位置或
+速度偏差自动修正。第五周反馈应使用竖直位置和速度；若高度定义为 `h=-p_d`，
+则 `h_dot=-v_d`。也可以直接使用 Down 位置 `p_d` 和速度 `v_d`，但参考值、
+误差符号和推力方向必须统一约定。本周不实现控制器。
+
+上述命令只针对周五新增演示和比较程序，不代表当前 CTest、GoogleTest 或 pytest
+全量回归；干净构建与全量验收按计划留到周六。
+
+VS Code 中可用左侧 Source Control 视图检查同一批改动：`Changes` 表示尚未暂存，
+文件右侧 `+` 会加入暂存区；`Staged Changes` 表示下一次提交的预览，文件右侧 `-`
+可取消暂存。点击文件可查看工作区与基线的逐行 diff。检查时不要把 `build/`、
+`__pycache__/` 或临时文件加入版本控制，也不要为了查看 diff 而实际提交。本次周五
+文件可以在不 stage/unstage 的情况下直接预览，并使用 `git status --short`、
+`git diff -- README.md CMakeLists.txt` 和未跟踪文件清单交叉核对。
+
 每周练习默认参与构建。如只需正式核心库和应用，可以配置：
 
 ```bash
