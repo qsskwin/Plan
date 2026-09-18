@@ -7,7 +7,17 @@
 #include <cstddef>
 #include <iomanip>
 #include <iostream>
-#include <iomanip>
+#include <vector>
+
+
+struct Sample  {
+    double timeS;
+    double referenceHeightM;
+    double heightM;
+    double verticalSpeedMps;
+    double rawThrustN;
+    double appliedThrustN;
+};
 
 int main() {
     // 仿真设置
@@ -18,6 +28,7 @@ int main() {
     constexpr double kStepReferenceHeightM = 1.0;
     constexpr double kStepTimeS = 1.0;        
     double kReferenceHeightM = 0.0;
+
     // 实际被控对象参数
     const aerial_control::PointMassParameters plantParameters{
         1.5  // massKg
@@ -26,8 +37,8 @@ int main() {
     // 控制器参数
     const aerial_control::AltitudePdParameters controllerParameters{
         1.5,       // nominalMassKg
-        4.0,       // kpPerSecondSquared
-        4.0,       // kdPerSecond
+        4,       // kpPerSecondSquared
+        4,       // kdPerSecond
         0.0,       // minThrustN
         29.41995  // maxThrustN
     };
@@ -39,7 +50,7 @@ int main() {
     // 六维状态：[p_n, p_e, p_d, v_n, v_e, v_d]
     aerial_control::StateVector state =
         aerial_control::StateVector::Zero(6);
-        // state(2) = -1.0;  // 初始高度 1 m
+        // state(2) = -0.5;  // 初始高度 0.5 m
         // state(5) = 1.0;   // 初始垂直速度 0 m/s
     // 在两个控制采样时刻之间保持不变的输入
     aerial_control::PointMassInput heldInput{
@@ -50,6 +61,8 @@ int main() {
     std::size_t integrationCount = 0U;
     std::size_t controlUpdateCount = 0U;
 
+    std::vector<Sample> samples;
+    samples.reserve(kNumIntegrationSteps / kControlStride);
     std::cout << std::setprecision(15);
 
     // lambda 只读取当前保持的输入，不更新控制器
@@ -96,6 +109,14 @@ int main() {
                         verticalSpeedMps);
 
                 heldInput.totalThrustN = command.appliedThrustN;
+                samples.push_back(Sample{
+                    timeS,
+                    kReferenceHeightM,
+                    heightM,
+                    verticalSpeedMps,
+                    command.rawThrustN,
+                    command.appliedThrustN,
+                });
                 ++controlUpdateCount;
 
                 if (step == 98U || step == 100U || step == 102U ||
@@ -141,6 +162,9 @@ int main() {
               << state(3) << " m/s\n";
     std::cout << "final east velocity: "
               << state(4) << " m/s\n";
-
+    std::cout << "sample count: "
+            << samples.size() << '\n';
+    std::cout << "sample capacity: "
+            << samples.capacity() << '\n';
     return 0;
 }
