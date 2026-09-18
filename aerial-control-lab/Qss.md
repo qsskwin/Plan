@@ -4,25 +4,51 @@
 aerial-control-lab/
 ├── CMakeLists.txt
 ├── README.md
+├── Qss.md
 ├── .gitignore
 ├── cpp/
 │   ├── include/core/
-│   │   └── project_info.hpp
+│   │   ├── altitude_pd.hpp
+│   │   ├── integrators.hpp
+│   │   ├── point_mass.hpp
+│   │   ├── project_info.hpp
+│   │   └── rotation.hpp
 │   ├── src/
-│   │   └── project_info.cpp
+│   │   ├── altitude_pd.cpp
+│   │   ├── integrators.cpp
+│   │   ├── point_mass.cpp
+│   │   ├── project_info.cpp
+│   │   └── rotation.cpp
 │   ├── apps/
+│   │   ├── altitude_pd_demo.cpp
 │   │   └── sanity_check.cpp
 │   └── tests/
-│       └── aerial_core_test.cpp
+│       ├── aerial_core_test.cpp
+│       ├── altitude_pd_test.cpp
+│       ├── eigen_vector_test.cpp
+│       ├── integrators_test.cpp
+│       ├── point_mass_test.cpp
+│       └── rotation_test.cpp
 ├── python/
 │   ├── aerial_control/
-│   │   └── __init__.py
+│   │   ├── integrators.py
+│   │   ├── point_mass.py
+│   │   ├── quaternion.py
+│   │   ├── rotation.py
+│   │   └── simulation.py
 │   └── tests/
-│       └── README.md
+│       ├── test_integrators.py
+│       ├── test_point_mass.py
+│       ├── test_quaternion.py
+│       └── test_rotation.py
 ├── configs/
 │   └── README.md
 ├── docs/
-│   └── environment.md
+│   ├── build_troubleshooting.md
+│   ├── coordinate_conventions.md
+│   ├── cpp_gap_list.md
+│   ├── environment.md
+│   └── rotation_test_vectors.md
 ├── build/
 └── .git/
 ```
@@ -31,7 +57,7 @@ aerial-control-lab/
 
 ### `CMakeLists.txt`
 
-[CMakeLists.txt](/home/laptop/Qss/Plan/aerial-control-lab/CMakeLists.txt) 是 C++ 项目的构建说明书，告诉 CMake：
+[CMakeLists.txt](CMakeLists.txt) 是 C++ 项目的构建说明书，告诉 CMake：
 
 - 项目叫什么；
 - 使用什么 C++ 标准；
@@ -52,7 +78,7 @@ C++ 源文件 + CMakeLists.txt
 
 ### `README.md`
 
-[README.md](/home/laptop/Qss/Plan/aerial-control-lab/README.md) 是给项目使用者看的入口文档，包括：
+[README.md](README.md) 是给项目使用者看的入口文档，包括：
 
 - 项目用途；
 - 如何配置；
@@ -83,7 +109,11 @@ __pycache__/
 当前文件：
 
 ```text
+altitude_pd.hpp
+integrators.hpp
+point_mass.hpp
 project_info.hpp
+rotation.hpp
 ```
 
 头文件主要声明“有什么接口可以使用”，例如：
@@ -98,15 +128,6 @@ std::string_view project_name() noexcept;
 #include "core/project_info.hpp"
 ```
 
-以后这里可能出现：
-
-```text
-coordinate_transform.hpp
-quaternion.hpp
-rigid_body_state.hpp
-rotation_matrix.hpp
-```
-
 `core` 表示这些接口属于项目核心库，不是 CMake 的特殊关键字，只是项目的目录命名。
 
 ### `cpp/src/`：核心库实现
@@ -114,10 +135,14 @@ rotation_matrix.hpp
 当前文件：
 
 ```text
+altitude_pd.cpp
+integrators.cpp
+point_mass.cpp
 project_info.cpp
+rotation.cpp
 ```
 
-它负责实现头文件声明的函数：
+这些文件负责实现头文件声明的函数。例如 `project_info.cpp` 实现：
 
 ```cpp
 std::string_view project_name() noexcept {
@@ -145,6 +170,7 @@ build/libaerial_core.a
 当前文件：
 
 ```text
+altitude_pd_demo.cpp
 sanity_check.cpp
 ```
 
@@ -156,18 +182,20 @@ int main() {
 }
 ```
 
-当前构建结果是：
+当前主要构建结果包括：
 
 ```text
 build/sanity_check
+build/altitude_pd_demo
 ```
 
-后面可以增加不同的实验程序，例如：
+`altitude_pd_demo` 复用核心库中的高度 PD、RK4 和质点动力学，按固定采样周期运行闭环。其内部职责已经分为：
 
 ```text
-rotation_demo.cpp
-quaternion_demo.cpp
-simulation_runner.cpp
+AltitudePdController::compute  计算控制
+runCase                       推进工况并保存样本
+summarizeCase                 汇总结果
+exportSamplesCsv              导出已有样本
 ```
 
 `apps/` 与 `src/` 的区别是：
@@ -181,28 +209,25 @@ simulation_runner.cpp
 
 ```text
 aerial_core_test.cpp
+altitude_pd_test.cpp
+eigen_vector_test.cpp
+integrators_test.cpp
+point_mass_test.cpp
+rotation_test.cpp
 ```
 
-这里放验证 C++ 核心库是否正确的自动化测试。当前测试检查 `project_name()` 是否返回预期结果。
-
-后面可能包含：
-
-```text
-rotation_matrix_test.cpp
-quaternion_test.cpp
-coordinate_transform_test.cpp
-```
+这里放验证 C++ 核心库行为的自动化测试，当前覆盖项目骨架、Eigen 向量、旋转、积分器、质点平动和高度 PD 控制器。
 
 测试代码不会成为正式应用的一部分，它只负责发现错误、防止旧功能被改坏。
 
 当前关系是：
 
 ```text
-                   aerial_core
-                   核心静态库
-                  ↙          ↘
-        sanity_check       aerial_core_test
-          正常应用            测试程序
+                         aerial_core
+                         核心静态库
+                 ↙            ↓             ↘
+      sanity_check   altitude_pd_demo   aerial_core_gtest
+         应用              闭环演示           测试程序
 ```
 
 ## `python/`：Python 验证代码
@@ -221,12 +246,14 @@ aerial_control
 aerial-control
 ```
 
-当前只有 `__init__.py`，用于把目录标记为 Python 包。后面可以添加：
+当前包除 `__init__.py` 外还包括：
 
 ```text
-rotations.py
-quaternions.py
-coordinate_frames.py
+integrators.py
+point_mass.py
+quaternion.py
+rotation.py
+simulation.py
 ```
 
 这个项目中 Python 主要适合：
@@ -238,14 +265,16 @@ coordinate_frames.py
 
 ### `python/tests/`
 
-用于放 Python 测试，例如：
+当前已有：
 
 ```text
-test_rotations.py
-test_quaternions.py
+test_integrators.py
+test_point_mass.py
+test_quaternion.py
+test_rotation.py
 ```
 
-目前只有占位说明，还没有接入 pytest。
+这些测试已经接入 pytest。本文档更新没有重新运行 Python 全量测试；历史运行结果与当前是否回归通过应分别记录。
 
 ## `configs/`：配置文件
 
@@ -269,14 +298,14 @@ simulation.yaml
 
 ## `docs/`：项目文档
 
-当前包含 [environment.md](/home/laptop/Qss/Plan/aerial-control-lab/docs/environment.md)，记录操作系统和工具版本。
-
-后续还会放：
+当前包含：
 
 ```text
+build_troubleshooting.md
 coordinate_conventions.md
 cpp_gap_list.md
-dynamics_model.md
+environment.md
+rotation_test_vectors.md
 ```
 
 这里适合记录代码本身难以表达的内容，例如：
@@ -294,20 +323,20 @@ dynamics_model.md
 ```text
 libaerial_core.a
 sanity_check
+altitude_pd_demo
 aerial_core_test
 CMakeCache.txt
 CMakeFiles/
 ```
 
-这里的内容不应手动编辑，也不会提交到 Git。遇到构建缓存问题时，可以删除整个 `build/` 再重新生成：
+这里的内容不应手动编辑，也不会提交到 Git。日常应复用与工具链匹配的 preset 构建目录；需要验证干净构建时，创建一个路径明确的新构建目录，不删除已有构建证据。例如：
 
-```bash
-rm -rf build
-cmake -S . -B build
-cmake --build build
+```powershell
+cmake --preset windows-mingw-gcc-debug -B .\build\clean-check
+cmake --build .\build\clean-check --parallel 4
 ```
 
-删除 `build/` 不会丢失源码。
+生成文件不属于源码；不要将构建目录加入 Git。
 
 ## `.git/`：Git 仓库数据
 

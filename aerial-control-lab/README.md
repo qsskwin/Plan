@@ -176,12 +176,78 @@ $env:PYTHONPATH = (Resolve-Path .\python).Path
 互差为零。
 
 原推力只是按名义质量计算的固定前馈平衡输入。质量变化后，它不会依据位置或
-速度偏差自动修正。第五周反馈应使用竖直位置和速度；若高度定义为 `h=-p_d`，
-则 `h_dot=-v_d`。也可以直接使用 Down 位置 `p_d` 和速度 `v_d`，但参考值、
-误差符号和推力方向必须统一约定。本周不实现控制器。
+速度偏差自动修正。第五周已在同一平动模型上增加高度 PD 反馈；高度定义为
+`h=-p_d`，向上速度为 `v_h=-v_d`。接口、调度和运行入口见下一节。
 
 上述命令只针对周五新增演示和比较程序，不代表当前 CTest、GoogleTest 或 pytest
 全量回归；干净构建与全量验收按计划留到周六。
+
+## 第五周高度 PD 闭环
+
+高度控制接口位于
+[`cpp/include/core/altitude_pd.hpp`](cpp/include/core/altitude_pd.hpp)，实现位于
+[`cpp/src/altitude_pd.cpp`](cpp/src/altitude_pd.cpp)，闭环演示入口为
+[`cpp/apps/altitude_pd_demo.cpp`](cpp/apps/altitude_pd_demo.cpp)。控制器计算：
+
+```text
+e = h_ref - h
+a_cmd = kp*e - kd*v_h
+raw_thrust = m_nominal*(g + a_cmd)
+applied_thrust = clamp(raw_thrust, min_thrust, max_thrust)
+```
+
+当前演示使用名义质量 `1.5 kg`、实际质量 `1.65 kg`、`kp=4 s^-2`、
+`kd=4 s^-1`、积分步长 `0.01 s` 和控制周期 `0.02 s`，用于展示纯 PD 在常值
+质量偏差下的非零稳态误差。程序还执行两次与动力学隔离的静态探测，分别展示
+推力上、下限以及 `rawThrustN` 与 `appliedThrustN` 的区别。
+
+程序内的职责边界为：
+
+| 职责 | 位置 | 不负责什么 |
+|---|---|---|
+| 计算控制 | `AltitudePdController::compute` | 不积分动力学、不打印、不写文件 |
+| 运行工况 | `runCase` | 不汇总指标、不导出 CSV |
+| 汇总结果 | `summarizeCase` / `printSummary` | 不改变状态或控制命令 |
+| 导出数据 | `exportSamplesCsv` | 只读取已保存的 `Sample` |
+
+Windows PowerShell 中定向构建并运行：
+
+```powershell
+cmake --build .\build\windows-mingw-gcc-debug --target altitude_pd_demo -j 4
+& .\build\windows-mingw-gcc-debug\altitude_pd_demo.exe
+```
+
+需要导出每次控制更新的数据时，显式提供输出路径；程序默认不写文件：
+
+```powershell
+& .\build\windows-mingw-gcc-debug\altitude_pd_demo.exe `
+  --output-csv .\build\windows-mingw-gcc-debug\altitude_pd_mass_bias.csv
+```
+
+CSV 字段为时间、参考高度、高度、向上速度、限幅前推力和实际推力。当前 10 秒
+工况共有 500 行数据，不包含额外的终点控制更新。
+
+调用关系与对象生命周期如下：
+
+```text
+main
+├── AltitudePdController（main 持有，覆盖整个同步仿真）
+├── runCase(case, controller)
+│   ├── plantParameters / heldInput / state（runCase 局部持有）
+│   ├── controller.compute（仅在控制采样时刻调用）
+│   └── rk4Step
+│       └── dynamics lambda
+│           └── pointMassDerivative
+├── summarizeCase(result)
+├── printSummary(result, summary)
+├── printSaturationChecks(controller)
+└── exportSamplesCsv(result.samples)（仅指定 --output-csv 时）
+```
+
+`dynamics` lambda 按引用读取 `plantParameters` 与 `heldInput`，但它只在 `runCase`
+返回前同步调用，因此被引用对象始终存活。`CaseResult` 按值返回并拥有自己的
+`finalState` 与 `samples`；后续汇总、打印和导出只通过 `const` 引用读取结果。
+本节命令属于定向演示，不代表 C++ 或 Python 全量回归。
 
 VS Code 中可用左侧 Source Control 视图检查同一批改动：`Changes` 表示尚未暂存，
 文件右侧 `+` 会加入暂存区；`Staged Changes` 表示下一次提交的预览，文件右侧 `-`
