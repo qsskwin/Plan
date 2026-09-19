@@ -96,7 +96,7 @@ CaseResult runCase(const CaseDefinition& caseDefinition,
     if (step % caseDefinition.controlStride == 0U) {
       const double referenceHeightM =
           referenceHeightAtTime(caseDefinition, timeS);
-      const double heightM = -result.finalState(2);
+      const double heightM = -result.finalState(2); //在这里进行更新
       const double verticalSpeedMps = -result.finalState(5);
       const aerial_control::AltitudeCommand command =
           controller.compute(referenceHeightM, heightM, verticalSpeedMps);
