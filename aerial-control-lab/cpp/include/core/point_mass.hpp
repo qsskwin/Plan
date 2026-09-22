@@ -4,23 +4,22 @@
 
 #include "core/integrators.hpp"
 
-namespace aerial_control {
+namespace aerial_control
+{
 
-inline constexpr double kStandardGravityMps2 = 9.80665;
+  inline constexpr double kStandardGravityMps2 = 9.80665;
 
-struct PointMassParameters {
+  struct PointMassParameters
+  {
     double massKg;
-};
+  };
 
-struct PointMassInput {
+  struct PointMassInput
+  {
     double totalThrustN;
     Eigen::Quaterniond qNb;
-};
+  };
 
-StateVector pointMassDerivative(
-    double t,
-    const StateVector& state,
-    const PointMassParameters& parameters,
-    const PointMassInput& input);
+  StateVector pointMassDerivative(double t, const StateVector &state, const PointMassParameters &parameters, const PointMassInput &input);
 
-}  // namespace aerial_control
+} // namespace aerial_control

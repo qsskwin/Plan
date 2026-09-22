@@ -1,12 +1,11 @@
 #include "core/project_info.hpp"
 
-namespace aerial_control {
+namespace aerial_control
+{
 
-std::string_view project_name() noexcept {
-    return "aerial-control-lab";
-}
+  std::string_view project_name() noexcept { return "aerial-control-lab"; }
 
-}  // namespace aerial_control
+} // namespace aerial_control
 // no exception = noexcpet 承诺函数不会出现C++异常。
 // 1. 给编译器优化提示
 // 编译器可以跳过异常栈展开相关代码，生成更精简机器码；

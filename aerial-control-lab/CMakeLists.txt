@@ -218,6 +218,13 @@ target_link_libraries(altitude_pd_demo PRIVATE aerial_core)
 target_compile_features(altitude_pd_demo PRIVATE cxx_std_17)
 aerial_enable_warnings(altitude_pd_demo)
 
+add_executable(attitude_kinematics_demo
+    cpp/apps/attitude_kinematics_demo.cpp
+)
+target_link_libraries(attitude_kinematics_demo PRIVATE aerial_core)
+target_compile_features(attitude_kinematics_demo PRIVATE cxx_std_17)
+aerial_enable_warnings(attitude_kinematics_demo)
+
 # 练习目录按 WeekN/Day/task_X 分层。每个练习使用包含周、日、任务名的
 # 唯一 target 名称，避免后续新增 Week2、Mon 或 task_B 时发生重名。
 # add_subdirectory 会立即读取子目录中的 CMakeLists.txt，并为它分配对应的构建子目录。

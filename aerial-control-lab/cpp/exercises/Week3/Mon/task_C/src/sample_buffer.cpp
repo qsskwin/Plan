@@ -1,21 +1,14 @@
 #include "sample_buffer.hpp"
 
-namespace aerial_control::week3_mon {
+namespace aerial_control::week3_mon
+{
 
-void SampleBuffer::add(double sample) {
-    samples_.push_back(sample);
-}
+  void SampleBuffer::add(double sample) { samples_.push_back(sample); }
 
-bool SampleBuffer::empty() const noexcept {
-    return samples_.empty();
-}
+  bool SampleBuffer::empty() const noexcept { return samples_.empty(); }
 
-std::size_t SampleBuffer::size() const noexcept {
-    return samples_.size();
-}
+  std::size_t SampleBuffer::size() const noexcept { return samples_.size(); }
 
-double SampleBuffer::at(std::size_t index) const {
-    return samples_.at(index);
-}
+  double SampleBuffer::at(std::size_t index) const { return samples_.at(index); }
 
-}  // namespace aerial_control::week3_mon
+} // namespace aerial_control::week3_mon

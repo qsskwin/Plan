@@ -7,14 +7,16 @@
 
 using aerial_control::week3_mon::SampleBuffer;
 
-TEST(SampleBufferTest, DefaultConstructedBufferIsEmpty) {
+TEST(SampleBufferTest, DefaultConstructedBufferIsEmpty)
+{
   const SampleBuffer buffer;
 
   EXPECT_TRUE(buffer.empty());
   EXPECT_EQ(buffer.size(), 0U);
 }
 
-TEST(SampleBufferTest, AddUpdatesEmptyAndSize) {
+TEST(SampleBufferTest, AddUpdatesEmptyAndSize)
+{
   SampleBuffer buffer;
 
   buffer.add(1.25);
@@ -25,7 +27,8 @@ TEST(SampleBufferTest, AddUpdatesEmptyAndSize) {
   EXPECT_EQ(buffer.size(), 2U);
 }
 
-TEST(SampleBufferTest, AtReturnsSamplesInInsertionOrder) {
+TEST(SampleBufferTest, AtReturnsSamplesInInsertionOrder)
+{
   SampleBuffer buffer;
   buffer.add(1.25);
   buffer.add(-2.5);
@@ -36,20 +39,18 @@ TEST(SampleBufferTest, AtReturnsSamplesInInsertionOrder) {
   EXPECT_DOUBLE_EQ(buffer.at(2), 3.75);
 }
 
-TEST(SampleBufferTest, AtThrowsForOutOfRangeIndex) {
+TEST(SampleBufferTest, AtThrowsForOutOfRangeIndex)
+{
   SampleBuffer buffer;
 
-  EXPECT_THROW(
-      static_cast<void>(buffer.at(0)),
-      std::out_of_range);
+  EXPECT_THROW(static_cast<void>(buffer.at(0)), std::out_of_range);
 
   buffer.add(4.0);
-  EXPECT_THROW(
-      static_cast<void>(buffer.at(1)),
-      std::out_of_range);
+  EXPECT_THROW(static_cast<void>(buffer.at(1)), std::out_of_range);
 }
 
-TEST(SampleBufferTest, CopyCreatesIndependentBuffer) {
+TEST(SampleBufferTest, CopyCreatesIndependentBuffer)
+{
   SampleBuffer original;
   original.add(1.0);
 
@@ -63,7 +64,8 @@ TEST(SampleBufferTest, CopyCreatesIndependentBuffer) {
   EXPECT_DOUBLE_EQ(copy.at(1), 2.0);
 }
 
-TEST(SampleBufferTest, MoveTransfersSamplesToDestination) {
+TEST(SampleBufferTest, MoveTransfersSamplesToDestination)
+{
   SampleBuffer source;
   source.add(1.0);
   source.add(2.0);

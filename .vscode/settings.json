@@ -10,6 +10,10 @@
     "python.testing.pytestEnabled": true,
     "python.testing.cwd": "${workspaceFolder}/aerial-control-lab",
     "C_Cpp.errorSquiggles": "enabled",
-    "C_Cpp.clang_format_fallbackStyle": "Google",
-    "C_Cpp.clang_format_sortIncludes": true
+    "C_Cpp.clang_format_fallbackStyle": "Visual Studio",
+    "C_Cpp.clang_format_style": "{ BasedOnStyle: LLVM, UseTab: Never, IndentWidth: 2, TabWidth: 2, BreakBeforeBraces: Allman, AllowShortIfStatementsOnASingleLine: false, IndentCaseLabels: false, ColumnLimit: 1000, AccessModifierOffset: -2, NamespaceIndentation: All, FixNamespaceComments: false }",
+    "C_Cpp.clang_format_sortIncludes": true,
+    "[cpp]": {
+        "editor.defaultFormatter": "ms-vscode.cpptools"
+    }
 }

@@ -2,16 +2,16 @@
 
 #include <Eigen/Core>
 
-namespace week2::fri {
+namespace week2::fri
+{
 
-    using State = Eigen::Vector2d;
+  using State = Eigen::Vector2d;
 
-    inline constexpr double kGravity = 9.80665;  // m/s^2, NED down is positive
+  inline constexpr double kGravity = 9.80665; // m/s^2, NED down is positive
 
-    State free_fall_derivative(double t, const State& state);
+  State free_fall_derivative(double t, const State &state);
 
-    State euler_step(double t, const State& state, double dt);
+  State euler_step(double t, const State &state, double dt);
 
-    State rk4_step(double t, const State& state, double dt);
-}   // namespace week2::fri
-
+  State rk4_step(double t, const State &state, double dt);
+} // namespace week2::fri

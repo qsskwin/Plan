@@ -3,9 +3,11 @@
 
 #include "coordinate_conversions.hpp"
 
-namespace {
+namespace
+{
 
-TEST(CoordinateConversionsTest, ConvertsNedBasisVectorsToEnu) {
+  TEST(CoordinateConversionsTest, ConvertsNedBasisVectorsToEnu)
+  {
     Eigen::Vector3d ned_x(1.0, 0.0, 0.0);
     Eigen::Vector3d ned_y(0.0, 1.0, 0.0);
     Eigen::Vector3d ned_z(0.0, 0.0, 1.0);
@@ -25,9 +27,10 @@ TEST(CoordinateConversionsTest, ConvertsNedBasisVectorsToEnu) {
     EXPECT_DOUBLE_EQ(enu_z.x(), 0.0);
     EXPECT_DOUBLE_EQ(enu_z.y(), 0.0);
     EXPECT_DOUBLE_EQ(enu_z.z(), -1.0);
-}
+  }
 
-TEST(CoordinateConversionsTest, ConvertsFrdToFlu) {
+  TEST(CoordinateConversionsTest, ConvertsFrdToFlu)
+  {
     Eigen::Vector3d frd_x(1.0, 0.0, 0.0);
     Eigen::Vector3d frd_y(0.0, 2.0, 0.0);
     Eigen::Vector3d frd_z(0.0, 0.0, 3.0);
@@ -63,6 +66,6 @@ TEST(CoordinateConversionsTest, ConvertsFrdToFlu) {
     EXPECT_DOUBLE_EQ(frd_x.norm(), flu_x.norm());
     EXPECT_DOUBLE_EQ(frd_y.norm(), flu_y.norm());
     EXPECT_DOUBLE_EQ(frd_z.norm(), flu_z.norm());
-}
+  }
 
-}  // namespace
+} // namespace
