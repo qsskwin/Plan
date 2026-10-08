@@ -41,7 +41,7 @@ namespace aerial_control
     double maxAxisDirectionError = 0.0;
   };
 
-  std::vector<AttitudeSample> runAttitudeCase(const AttitudeCase &attitudeCase)
+  std::vector<AttitudeSample> runAttitudeCase(const AttitudeCase &attitudeCase) //积分循环和四元数转换
   {
     StateVector state = attitudeCase.initialQuaternionWxyz;
     const Eigen::Vector3d angularRateBodyRadps = attitudeCase.angularRateBodyRadps;
@@ -55,10 +55,10 @@ namespace aerial_control
     for (std::size_t i = 0; i < attitudeCase.numIntegrationSteps; ++i)
     {
       const double timeS = static_cast<double>(i) * attitudeCase.dtS;
-      const StateVector rawNextState = rk4Step(derivative, timeS, state, attitudeCase.dtS);
+      const StateVector rawNextState = rk4Step(derivative, timeS, state, attitudeCase.dtS); 
       const double rawNormError = std::abs(rawNextState.norm() - 1.0);
 
-      const Eigen::Quaterniond rawQuaternion{rawNextState(0), rawNextState(1), rawNextState(2), rawNextState(3)};
+      const Eigen::Quaterniond rawQuaternion{rawNextState(0), rawNextState(1), rawNextState(2), rawNextState(3)};  //四元数转换
       const Eigen::Quaterniond unitQuaternion = normalizeQuaternion(rawQuaternion);
       state << unitQuaternion.w(), unitQuaternion.x(), unitQuaternion.y(), unitQuaternion.z();
 

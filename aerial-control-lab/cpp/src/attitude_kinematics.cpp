@@ -8,7 +8,7 @@
 namespace aerial_control
 {
 
-  StateVector attitudeKinematicsDerivative(double timeS, const StateVector &quaternionWxyz, const Eigen::Vector3d &angularRateBodyRadps)
+  StateVector attitudeKinematicsDerivative(double timeS, const StateVector &quaternionWxyz, const Eigen::Vector3d &angularRateBodyRadps) //姿态导数
   {
     if (quaternionWxyz.size() != 4)
     {
