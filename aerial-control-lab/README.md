@@ -270,6 +270,42 @@ cmake --build .\build\week2-sat-clean-20260822 --parallel 4
 ctest --test-dir .\build\week2-sat-clean-20260822 --output-on-failure
 ```
 
+## 第六周姿态运动学
+
+给定初始姿态和恒定机体系角速度，用现有 RK4 积分得到姿态轨迹，并与轴角解析解及
+机体三轴方向比较。导数接口位于
+[`cpp/include/core/attitude_kinematics.hpp`](cpp/include/core/attitude_kinematics.hpp)，
+演示入口为 [`cpp/apps/attitude_kinematics_demo.cpp`](cpp/apps/attitude_kinematics_demo.cpp)。
+`attitudeKinematicsDerivative` 返回四元数导数；`runAttitudeCase` 负责循环、整步
+归一化和样本保存。角速度由工况外部给定，当前实验不计算力矩或反馈控制指令。
+
+- 世界系为 NED，机体系为 FRD；`q_NB` 表示从 B 到 N 的旋转。
+- 四元数状态顺序为 `[w,x,y,z]`；角速度分量表达在机体系中，单位为 `rad/s`。
+- 每个 RK4 整步后先记录原始范数偏差，再归一化姿态；导数和 RK4 中间阶段不归一化。
+- 比较姿态时允许 `q` 与 `-q` 等价，取两种符号下四元数差的较小二范数。
+
+在 `aerial-control-lab` 目录完成对应 preset 的配置后，Windows PowerShell 中运行：
+
+```powershell
+cmake --build --preset windows-mingw-gcc-debug --target attitude_kinematics_demo
+& .\build\windows-mingw-gcc-debug\attitude_kinematics_demo.exe
+```
+
+程序默认打印四个固定工况的终态和全轨迹最大误差。2026-09-23 已记录的结果如下；
+各工况统一使用 `dt=0.01 s`、200 次积分、201 个样本，末时间为 `2 s`。
+
+| 工况 | 全轨迹最大四元数误差（符号不敏感） | 终态方向 |
+|---|---:|---|
+| 静止 | `0` | 前轴 North |
+| 正偏航 90° | `1.56e-12` | 前轴 East |
+| 正滚转 10° | `2.22e-16` | 机体 `-z_B` 的 East 分量约 `+0.173648` |
+| 初始正偏航 90°，再绕机体前轴正滚转 90° | `1.56e-12` | 前、右、下轴依次指向 East、Down、North |
+
+四工况中最大的三轴方向误差约为 `3.11e-12`，最大的归一化后范数偏差约为
+`2.22e-16`。这些结果适用于本组理想、短时、恒定角速度工况。
+已有[方向图](docs/attitude_kinematics_axes.png)展示第四工况的机体轴在 NED 中的方向，
+图中曲线表示轴端点方向变化，不表示飞机的位置轨迹。
+
 ## 目录结构
 
 ```text
