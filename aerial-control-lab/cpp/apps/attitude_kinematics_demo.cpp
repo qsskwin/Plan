@@ -46,7 +46,8 @@ namespace aerial_control
     StateVector state = attitudeCase.initialQuaternionWxyz;
     const Eigen::Vector3d angularRateBodyRadps = attitudeCase.angularRateBodyRadps;
 
-    const DerivativeFunction derivative = [angularRateBodyRadps](double timeS, const StateVector &evaluationState) -> StateVector { return attitudeKinematicsDerivative(timeS, evaluationState, angularRateBodyRadps); };
+    const DerivativeFunction derivative = [angularRateBodyRadps](double timeS, const StateVector &evaluationState) -> StateVector 
+                                          { return attitudeKinematicsDerivative(timeS, evaluationState, angularRateBodyRadps); };
 
     std::vector<AttitudeSample> samples;
     samples.reserve(attitudeCase.numIntegrationSteps + 1U);
