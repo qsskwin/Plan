@@ -306,6 +306,106 @@ cmake --build --preset windows-mingw-gcc-debug --target attitude_kinematics_demo
 已有[方向图](docs/attitude_kinematics_axes.png)展示第四工况的机体轴在 NED 中的方向，
 图中曲线表示轴端点方向变化，不表示飞机的位置轨迹。
 
+## 第七周三轴角速度动力学
+
+正式接口位于 [`cpp/include/core/rotational_dynamics.hpp`](cpp/include/core/rotational_dynamics.hpp)，
+实现位于 [`cpp/src/rotational_dynamics.cpp`](cpp/src/rotational_dynamics.cpp)，
+演示入口为 [`cpp/apps/angular_rate_demo.cpp`](cpp/apps/angular_rate_demo.cpp)。模型计算：
+
+$$
+J\boldsymbol\beta_B
+=\boldsymbol M_B-\boldsymbol\omega_B\times(J\boldsymbol\omega_B),
+\qquad
+\boldsymbol\beta_B=\frac{\mathrm d\boldsymbol\omega_B}{\mathrm dt}.
+$$
+
+采用质心处的 FRD 机体系，坐标轴与惯量主轴重合，
+$J=\operatorname{diag}(J_x,J_y,J_z)$ 固定且各分量严格为正。
+这是固定惯量的理想刚体模型，忽略阻力矩、柔性、转子额外动力学及执行器效应；
+每个工况直接给定恒定机体系合外力矩。
+
+| 对象 | 类型与成员 | 顺序或含义 | SI 单位 |
+|---|---|---|---|
+| 状态 | 三维 `StateVector angularRateBodyRadps` | $[\omega_x,\omega_y,\omega_z]$，机体系角速度 | $\mathrm{rad/s}$ |
+| 参数 | `RotationalParameters::principalInertiaKgM2`，`Eigen::Vector3d` | $[J_x,J_y,J_z]$，主惯量 | $\mathrm{kg\cdot m^2}$ |
+| 输入 | `RotationalInput::momentBodyNm`，`Eigen::Vector3d` | $[M_x,M_y,M_z]$，关于质心的机体系合外力矩 | $\mathrm{N\cdot m}$ |
+| 导数 | `angularRateDerivative` 返回的三维 `StateVector` | $[\beta_x,\beta_y,\beta_z]$，机体系角加速度 | $\mathrm{rad/s^2}$ |
+
+导数函数只读取输入并返回角加速度，不积分、不打印；拒绝维数错误、非有限输入、
+非正惯量及非有限返回值。`runAngularRateCase` 用按值捕获的固定参数和输入适配回调，
+每次使用 RK4 传入的 `evaluationState` 求导，将 `rk4Step` 返回的下一角速度赋回当前状态。
+轨迹按值保存初态与每一步的下一状态，时间由整数步索引构造。
+角速度和角加速度均保留实际大小，不归一化。
+
+基准四工况使用教学惯量 $[0.02,0.03,0.04]\,\mathrm{kg\cdot m^2}$、
+步长 $0.01\,\mathrm s$、200 次积分和 201 个样本，终点为 $2\,\mathrm s$。
+以下为 2026-10-12 已实际核对的基准结果；当前滚转工况已完成下方的惯量变化实验：
+
+| 工况 | 初始角速度（$\mathrm{rad/s}$） | 力矩（$\mathrm{N\cdot m}$） | 结果 |
+|---|---|---|---|
+| 静止 | $[0,0,0]$ | $[0,0,0]$ | 全程为零，全轨迹最大分量绝对误差为零 |
+| 无力矩主轴转动 | $[0,0,1]$ | $[0,0,0]$ | 全程保持初值，全轨迹最大分量绝对误差为零 |
+| 恒定正滚转力矩 | $[0,0,0]$ | $[0.01,0,0]$ | 末角速度 $[1.0000000000000007,0,0]$；最大误差 $7.7715611723760958\times10^{-16}\,\mathrm{rad/s}$ |
+| 无力矩三轴耦合 | $[1,2,3]$ | $[0,0,0]$ | 初始角加速度约为 $[-3,2,-0.5]\,\mathrm{rad/s^2}$；末角速度约为 $[-0.2589769891,-2.2899580546,2.9212214123]\,\mathrm{rad/s}$ |
+
+上述基准运行的四个工况均输出 `validation=PASS`，程序退出码为 0，
+样本均为三维、有限且时间对齐。
+前三个无耦合特例使用常量角加速度和线性角速度解析参考，误差阈值为
+$10^{-10}\,\mathrm{rad/s}$。第四工况单独检查初始导数与轨迹有效性，
+初始导数容差为 $10^{-12}\,\mathrm{rad/s^2}$，其 `validation` 不包含守恒统计。
+
+周六惯量变化实验中，当前 `main` 的滚转工况使用专用 `positiveRollParameters`，
+将 $J_x$ 改为 $0.04\,\mathrm{kg\cdot m^2}$，其余两个主惯量为 $0.03$、$0.04$；
+其他三个工况继续使用原基准惯量。滚转初态、力矩、步长和时长保持原值，
+因此解析角加速度为 $0.25\,\mathrm{rad/s^2}$，两秒末滚转角速度为
+$0.5\,\mathrm{rad/s}$。本人提供的实际输出为初始角加速度 $[0.25,0,0]\,\mathrm{rad/s^2}$、
+末角速度 $[0.50000000000000033,0,0]\,\mathrm{rad/s}$，
+全轨迹最大分量绝对误差 $3.8857805861880479\times10^{-16}\,\mathrm{rad/s}$。
+四个工况均保持 `validation=PASS`，其余三个工况的结果与基准一致。
+下方运行命令使用当前源码参数；上表原滚转结果作为基准保留。
+
+无力矩三轴轨迹的守恒量由辅助脚本读取 C++ 样本后计算：
+
+$$
+E=\tfrac12\boldsymbol\omega_B^{\mathsf T}J\boldsymbol\omega_B,
+\qquad H=\lVert J\boldsymbol\omega_B\rVert.
+$$
+
+已保存的 201 个样本中，$E_0=0.25\,\mathrm J$，
+$H_0=0.13564659966250536\,\mathrm{kg\cdot m^2/s}$；
+两项全轨迹最大相对漂移分别为 $2.5123125801940205\times10^{-10}$ 和
+$1.379477479922008\times10^{-10}$，均低于 $10^{-6}$。
+完整指标见 [JSON](docs/angular_rate_conservation_metrics.json)，
+图见[角速度轨迹](docs/angular_rate_trajectory.png)与[守恒漂移](docs/angular_rate_conservation.png)。
+
+在 `aerial-control-lab` 目录使用已有 Windows 构建树，不必重新配置或下载依赖。
+以下命令构建全部目标、运行演示并把输出保存为 UTF-8 运行记录，再执行全量 CTest：
+
+```powershell
+cmake --build --preset windows-mingw-gcc-debug
+$angularRateOutput = & .\build\windows-mingw-gcc-debug\angular_rate_demo.exe
+$angularRateOutput
+$angularRateOutput | Set-Content -LiteralPath .\build\windows-mingw-gcc-debug\angular_rate_demo_output.txt -Encoding utf8
+ctest --preset windows-mingw-gcc-debug
+```
+
+2026-10-12 集成后的全量 CTest 实际通过 122/122，退出码为 0，包含正式导数的
+维数、NaN/Inf、非正惯量、返回值溢出和输入保持检查。Python 正式模块未改动，
+本次未重复运行 pytest。
+
+需要分析上述运行记录时，使用已核对的本机解释器；脚本不另行实现动力学积分：
+
+```powershell
+& 'D:\anaconda\python.exe' .\python\plot_angular_rate_trajectory.py --input .\build\windows-mingw-gcc-debug\angular_rate_demo_output.txt
+& 'D:\anaconda\python.exe' .\python\analyze_angular_rate_conservation.py --input .\build\windows-mingw-gcc-debug\angular_rate_demo_output.txt
+```
+
+输出文件包含工况摘要和第四工况的轨迹表，属于运行记录，尚未另建独立 CSV。
+本组教学参数和短时软件检查不代表实测四旋翼模型或飞行验证；守恒量检查须与初始
+导数符号检查配合，不能单独排除耦合项反号。当前仅积分角速度，没有联合积分姿态，
+因此只检查角动量模长，不声称已验证惯性系角动量方向。力矩不依据参考与状态误差
+更新，当前模型尚未形成反馈控制。
+
 ## 目录结构
 
 ```text

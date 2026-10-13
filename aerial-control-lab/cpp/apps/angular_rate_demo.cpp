@@ -83,12 +83,15 @@ int main()
   try
   {
     const aerial_control::RotationalParameters parameters{Eigen::Vector3d{0.02, 0.03, 0.04}};
+    const aerial_control::RotationalParameters positiveRollParameters{Eigen::Vector3d{0.04, 0.03, 0.04}};
     const aerial_control::RotationalInput zeroMoment{Eigen::Vector3d::Zero()};
     const aerial_control::AngularRateCase stationary{"stationary", aerial_control::StateVector::Zero(3), parameters, zeroMoment, 0.01, 200U};
     const aerial_control::StateVector initialPrincipalAxisRateBodyRadps = Eigen::Vector3d{0.0, 0.0, 1.0};
     const aerial_control::AngularRateCase principalAxisRotation{"torque-free principal-axis rotation", initialPrincipalAxisRateBodyRadps, parameters, zeroMoment, 0.01, 200U};
     const aerial_control::RotationalInput positiveRollMoment{Eigen::Vector3d{0.01, 0.0, 0.0}};
-    const aerial_control::AngularRateCase positiveRoll{"constant positive roll moment", aerial_control::StateVector::Zero(3), parameters, positiveRollMoment, 0.01, 200U};
+    const aerial_control::AngularRateCase positiveRoll{"constant positive roll moment", aerial_control::StateVector::Zero(3), positiveRollParameters, positiveRollMoment, 0.01, 200U};
+    const aerial_control::StateVector initialCoupledRateBodyRadps = Eigen::Vector3d{1.0, 2.0, 3.0};
+    const aerial_control::AngularRateCase torqueFreeCoupling{"torque-free three-axis coupling", initialCoupledRateBodyRadps, parameters, zeroMoment, 0.01, 200U};
 
     std::cout << std::setprecision(17) << std::boolalpha;
     bool allCasesPassed = true;
@@ -127,6 +130,41 @@ int main()
       std::cout << "max_absolute_error_radps=" << maxAbsoluteErrorRadps << '\n';
       std::cout << "validation=" << (passed ? "PASS" : "FAIL") << "\n\n";
     }
+
+    // 一般三轴耦合工况单独核对初始导数与轨迹有效性，不套用常量角加速度参考。
+    const std::vector<aerial_control::AngularRateSample> coupledSamples = aerial_control::runAngularRateCase(torqueFreeCoupling);
+    const aerial_control::StateVector initialCoupledAccelerationBodyRadps2 = aerial_control::angularRateDerivative(0.0, torqueFreeCoupling.initialAngularRateBodyRadps, torqueFreeCoupling.parameters, torqueFreeCoupling.input);
+    const Eigen::Vector3d referenceInitialCoupledAccelerationBodyRadps2{-3.0, 2.0, -0.5};
+    bool allCoupledSamplesFinite = true;
+    bool allCoupledSampleTimesAligned = true;
+    for (std::size_t i = 0; i < coupledSamples.size(); ++i)
+    {
+      const aerial_control::AngularRateSample &sample = coupledSamples[i];
+      allCoupledSamplesFinite = allCoupledSamplesFinite && std::isfinite(sample.timeS) && sample.angularRateBodyRadps.size() == 3 && sample.angularRateBodyRadps.allFinite();
+      allCoupledSampleTimesAligned = allCoupledSampleTimesAligned && sample.timeS == static_cast<double>(i) * torqueFreeCoupling.dtS;
+    }
+
+    const aerial_control::AngularRateSample &initialCoupledSample = coupledSamples.front();
+    const aerial_control::AngularRateSample &finalCoupledSample = coupledSamples.back();
+    const bool initialCoupledStateMatches = (initialCoupledSample.angularRateBodyRadps.array() == torqueFreeCoupling.initialAngularRateBodyRadps.array()).all();
+    const bool initialCoupledDerivativeMatches = (initialCoupledAccelerationBodyRadps2 - referenceInitialCoupledAccelerationBodyRadps2).cwiseAbs().maxCoeff() <= 1e-12;
+    const bool coupledPassed = coupledSamples.size() == torqueFreeCoupling.numIntegrationSteps + 1U && allCoupledSamplesFinite && allCoupledSampleTimesAligned && initialCoupledSample.timeS == 0.0 && initialCoupledStateMatches && initialCoupledDerivativeMatches && std::abs(finalCoupledSample.timeS - 2.0) <= 1e-12;
+    allCasesPassed = allCasesPassed && coupledPassed;
+
+    std::cout << "case=" << torqueFreeCoupling.name << '\n';
+    std::cout << "integrations=" << coupledSamples.size() - 1U << '\n' << "samples=" << coupledSamples.size() << '\n';
+    std::cout << "initial_sample_time_s=" << initialCoupledSample.timeS << '\n' << "initial_angular_rate_body_radps=" << initialCoupledSample.angularRateBodyRadps.transpose() << '\n';
+    std::cout << "initial_angular_acceleration_body_radps2=" << initialCoupledAccelerationBodyRadps2.transpose() << '\n';
+    std::cout << "initial_derivative_matches=" << initialCoupledDerivativeMatches << '\n';
+    std::cout << "final_time_s=" << finalCoupledSample.timeS << '\n' << "final_angular_rate_body_radps=" << finalCoupledSample.angularRateBodyRadps.transpose() << '\n';
+    std::cout << "all_samples_finite=" << allCoupledSamplesFinite << '\n' << "all_sample_times_aligned=" << allCoupledSampleTimesAligned << '\n';
+    std::cout << "validation=" << (coupledPassed ? "PASS" : "FAIL") << '\n';
+    std::cout << "trajectory_time_s,angular_rate_x_radps,angular_rate_y_radps,angular_rate_z_radps\n";
+    // for (const aerial_control::AngularRateSample &sample : coupledSamples)
+    // {
+    //   std::cout << sample.timeS << ',' << sample.angularRateBodyRadps(0) << ',' << sample.angularRateBodyRadps(1) << ',' << sample.angularRateBodyRadps(2) << '\n';
+    // }
+    // std::cout << '\n';
 
     return allCasesPassed ? 0 : 1;
   }

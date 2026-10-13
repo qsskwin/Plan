@@ -1,0 +1,35 @@
+{
+  "case": "torque-free three-axis coupling",
+  "source": "D:\\Qss\\Qss\\HNU\\Private\\Plan\\aerial-control-lab\\build\\windows-mingw-gcc-debug\\week7_friday_task_a_output.txt",
+  "principal_inertia_kg_m2": [
+    0.02,
+    0.03,
+    0.04
+  ],
+  "sample_count": 201,
+  "dt_s": 0.01,
+  "final_time_s": 2.0,
+  "relative_drift_limit": 1e-06,
+  "energy": {
+    "unit": "J",
+    "initial": 0.25,
+    "final": 0.249999999978843,
+    "max_absolute_relative_drift": 2.5123125801940205e-10,
+    "time_of_max_drift_s": 1.19,
+    "passed": true
+  },
+  "angular_momentum_norm": {
+    "unit": "kg*m^2/s",
+    "initial": 0.13564659966250536,
+    "final": 0.13564659965669412,
+    "max_absolute_relative_drift": 1.379477479922008e-10,
+    "time_of_max_drift_s": 1.19,
+    "passed": true
+  },
+  "scalar_crosscheck": {
+    "max_absolute_energy_difference_J": 5.551115123125783e-17,
+    "max_absolute_momentum_norm_difference_kg_m2_per_s": 2.7755575615628914e-17
+  },
+  "provenance": "G",
+  "both_invariants_passed": true
+}
