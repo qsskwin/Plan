@@ -166,6 +166,7 @@ add_library(aerial_core
     cpp/src/altitude_pd.cpp
     cpp/src/attitude_kinematics.cpp
     cpp/src/rotational_dynamics.cpp
+    cpp/src/attitude_rate_dynamics.cpp
 )
 
 # 设置 aerial_core 的公共头文件搜索路径。
@@ -300,6 +301,7 @@ if(BUILD_TESTING)
             cpp/tests/altitude_pd_test.cpp
             cpp/tests/attitude_kinematics_test.cpp
             cpp/tests/rotational_dynamics_test.cpp
+            cpp/tests/attitude_rate_dynamics_test.cpp
         )
 
         # PRIVATE aerial_core：测试可以调用正式核心库，但该依赖无需继续传播。
